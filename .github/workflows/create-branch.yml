@@ -11,12 +11,12 @@ jobs:
   create_issue_branch_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository  # ✅ 저장소 가져오기 (fetch-depth 설정 추가)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 전체 Git 히스토리 가져오기
+          fetch-depth: 0 
 
-      - name: Debug Git repository  # ✅ 원격 저장소 문제 확인
+      - name: Debug Git repository
         run: |
           git remote -v
           git branch
@@ -54,3 +54,4 @@ jobs:
 
             - 이슈 링크: #${{ github.event.issue.number }}
           delete-branch: false
+          allow-empty-commits: true
