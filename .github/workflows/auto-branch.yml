@@ -17,3 +17,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           base-branch: dev
+          
+      - name: Open Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.TOKEN }}
+          base: dev
+          branch: "feature-${{ github.event.issue.number }}"
+          title: "🚀 Pull Request #${{ github.event.issue.number }}"
+          body: |
+            🔥 **이슈 #${{ github.event.issue.number }}에 대한 PR 생성!** 🔥
+            
+            - 이슈 링크: #${{ github.event.issue.number }}
+            - 자동 생성된 PR입니다.  
+            
+            🚀 **확인 후 리뷰 부탁드립니다!**
+          draft: true 
+
