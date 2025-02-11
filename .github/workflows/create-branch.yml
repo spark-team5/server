@@ -11,9 +11,17 @@ jobs:
   create_issue_branch_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repository  # ✅ 저장소 가져오기 (fetch-depth 설정 추가)
         uses: actions/checkout@v4
-        
+        with:
+          fetch-depth: 0  # 전체 Git 히스토리 가져오기
+
+      - name: Debug Git repository  # ✅ 원격 저장소 문제 확인
+        run: |
+          git remote -v
+          git branch
+          git status
+
       - name: Create Issue Branch
         uses: robvanderleek/create-issue-branch@main
         env:
@@ -26,7 +34,7 @@ jobs:
       - name: Check if PR already exists
         id: check_pr
         run: |
-          if gh pr list --state open --base dev --head "feature-${{ github.event.issue.number }}" | grep "feature-${{ github.event.issue.number }}"; then
+          if gh pr list --state open --base dev --head "feature-${{ github.event.issue.number }}" --repo ${{ github.repository }} | grep "feature-${{ github.event.issue.number }}"; then
             echo "pr_exists=true" >> $GITHUB_ENV
           else
             echo "pr_exists=false" >> $GITHUB_ENV
