@@ -1,6 +1,6 @@
 name: "💡 Deploy"
 description: "배포 작업"
-label: ["release"]
+labels: ["release"]
 body:
   - type: textarea
     attributes:
