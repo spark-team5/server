@@ -22,19 +22,31 @@ jobs:
           git branch
           git status
 
+      - name: Determine Branch Name Based on Issue Labels
+        id: detect_branch
+        run: |
+          LABEL=$(echo '${{ toJSON(github.event.issue.labels) }}' | grep -oE '"name":"(refactor|release|test|fix|validation)"' | head -n 1 | cut -d':' -f2 | tr -d '"')
+          if [[ -z "$LABEL" ]]; then
+            LABEL="feature"  # 기본값 설정
+          fi
+          BRANCH_NAME="${LABEL}/issue-${{ github.event.issue.number }}"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Issue Branch
         uses: robvanderleek/create-issue-branch@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           default-branch: dev
-          branch-name: "feature-${{ github.event.issue.number }}"
+          branch-name: "${{ env.BRANCH_NAME }}"
           overwrite-existing: true
 
       - name: Check if PR already exists
         id: check_pr
         run: |
-          if gh pr list --state open --base dev --head "feature-${{ github.event.issue.number }}" --repo ${{ github.repository }} | grep "feature-${{ github.event.issue.number }}"; then
+          if gh pr list --state open --base dev --head "${{ env.BRANCH_NAME }}" --repo ${{ github.repository }} | grep "${{ env.BRANCH_NAME }}"; then
             echo "pr_exists=true" >> $GITHUB_ENV
           else
             echo "pr_exists=false" >> $GITHUB_ENV
@@ -47,7 +59,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: dev
-          branch: "feature-${{ github.event.issue.number }}"
+          branch: "${{ env.BRANCH_NAME }}"
           title: "🚀 Pull Request #${{ github.event.issue.number }}"
           body: |
             🔥 **이슈 #${{ github.event.issue.number }}에 대한 PR 생성!** 🔥
