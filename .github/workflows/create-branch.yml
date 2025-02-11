@@ -43,7 +43,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Open Pull Request
-        if: env.pr_exists == 'false'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,3 +53,4 @@ jobs:
             🔥 **이슈 #${{ github.event.issue.number }}에 대한 PR 생성!** 🔥
 
             - 이슈 링크: #${{ github.event.issue.number }}
+          delete-branch: false
