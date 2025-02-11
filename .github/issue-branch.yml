@@ -7,9 +7,9 @@ branchName: short
      prefix: release/
    - label: test
      prefix: test/
-   - label: bug🐛
+   - label: bug
      prefix: fix/
-   - label: question🏷️
+   - label: question🏷
      skip: true
    - label: validation
      prefix: validation/
