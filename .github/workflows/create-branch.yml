@@ -32,4 +32,5 @@ jobs:
             - 자동 생성된 PR입니다.  
             
             🚀 **확인 후 리뷰 부탁드립니다!**
+            Closes #${{ github.event.issue.number }}
           draft: true 
