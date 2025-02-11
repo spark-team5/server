@@ -1,22 +1,22 @@
 branchName: short
- autoCloseIssue: true
- branches:
-   - label: refactor
-     prefix: refactor/
-   - label: release
-     prefix: release/
-   - label: test
-     prefix: test/
-   - label: bug
-     prefix: fix/
-   - label: question🏷
-     skip: true
-   - label: validation
-     prefix: validation/
-   - label: '*'
-     prefix: feature/
- commentMessage: 'Branch ${branchName} created for issue: ${issue.title}'
- copyIssueLabelsToPR: true
- copyIssueAssigneeToPR: true
- copyIssueProjectsToPR: true
- copyIssueMilestoneToPR: true
+autoCloseIssue: true
+branches:
+ - label: refactor
+   prefix: refactor/
+ - label: release
+   prefix: release/
+ - label: test
+   prefix: test/
+ - label: bug
+   prefix: fix/
+ - label: question
+   skip: true
+ - label: validation
+   prefix: validation/
+ - label: '*'
+   prefix: feature/
+commentMessage: 'Branch ${branchName} created for issue: ${issue.title}'
+copyIssueLabelsToPR: true
+copyIssueAssigneeToPR: true
+copyIssueProjectsToPR: true
+copyIssueMilestoneToPR: true
