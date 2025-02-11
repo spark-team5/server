@@ -25,14 +25,13 @@ jobs:
       - name: Determine Branch Name Based on Issue Labels
         id: detect_branch
         run: |
-          LABEL=$(echo '${{ toJSON(github.event.issue.labels) }}' | grep -oE '"name":"(refactor|release|test|fix|validation)"' | head -n 1 | cut -d':' -f2 | tr -d '"')
-          if [[ -z "$LABEL" ]]; then
+          LABEL=$(echo '${{ toJSON(github.event.issue.labels) }}' | jq -r '.[0].name')
+          if [[ -z "$LABEL" || "$LABEL" == "null" ]]; then
             LABEL="feature"  # 기본값 설정
           fi
           BRANCH_NAME="${LABEL}/issue-${{ github.event.issue.number }}"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "🔹 Detected branch name: $BRANCH_NAME"
 
       - name: Create Issue Branch
         uses: robvanderleek/create-issue-branch@main
