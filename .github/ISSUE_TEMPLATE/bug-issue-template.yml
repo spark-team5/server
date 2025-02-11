@@ -1,6 +1,6 @@
 name: "🐛 Bug"
 description: "버그 제보"
-label: ["bug"]
+labels: ["bug"]
 body:
   - type: textarea
     attributes:
