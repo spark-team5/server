@@ -1,12 +1,12 @@
 name: Delete Merged Branch
 on:
   pull_request:
-    types:
-      - closed 
+    types: [closed]
 
 jobs:
   delete_merged_branch:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     steps:
       - name: Delete branch if merged
         uses: github-actions/delete-merged-branch@v4
