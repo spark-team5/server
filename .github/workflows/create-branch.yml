@@ -19,7 +19,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          base-branch: dev
+          default-branch: dev
           branch-name: "feature-${{ github.event.issue.number }}"
           overwrite-existing: true
 
