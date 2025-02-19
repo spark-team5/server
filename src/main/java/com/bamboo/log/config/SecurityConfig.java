@@ -50,7 +50,7 @@ public class SecurityConfig {
 
         //이쪽에다가 각각의 엔드포인트를 넣어야함
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/").permitAll()
+                .requestMatchers("/refresh").permitAll()
                 .anyRequest().authenticated());
 
 
