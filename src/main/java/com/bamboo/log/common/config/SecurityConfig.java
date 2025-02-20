@@ -50,7 +50,7 @@ public class SecurityConfig {
         //이쪽에다가 각각의 엔드포인트를 넣어야함
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/refresh").permitAll()
-                .requestMatchers("/logout","/api/jwt").hasAnyRole("USER")
+                .requestMatchers("/logout").hasAnyRole("USER")
                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
                 .anyRequest().authenticated());
 
