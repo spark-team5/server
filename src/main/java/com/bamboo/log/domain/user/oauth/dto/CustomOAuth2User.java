@@ -12,7 +12,6 @@ public class CustomOAuth2User implements OAuth2User {
     private final UserDTO userDTO;
 
     public CustomOAuth2User(UserDTO userDTO) {
-
         this.userDTO = userDTO;
     }
 
