@@ -16,17 +16,16 @@ security:
     client:
       registration:
         kakao:
-          client-authentication-method: client_secret_post
-          client-name: kakao
-          client-id: 649c1e34aedc1a7db892333d900725f2
-          client-secret: FqJEAF5XKaO0n4Bv3KVXWCpUcHQWahY8
-          redirect-uri: http://localhost:8080/login/oauth2/code/kakao
-          authorization-grant-type: authorization_code
-          scope: profile_nickname,account_email
+          client-authentication-method: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_AUTHENTICATION_METHOD}
+          client-name: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME}
+          client-id: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
+          client-secret: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
+          redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
+          authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
+          scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
       provider:
         kakao:
-          authorization-uri: https://kauth.kakao.com/oauth/authorize
-          token-uri: https://kauth.kakao.com/oauth/token
-          user-info-uri: https://kapi.kakao.com/v2/user/me
-          user-name-attribute: id
-
+          authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
+          token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
+          user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
+          user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
