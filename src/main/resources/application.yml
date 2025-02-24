@@ -29,9 +29,11 @@ security:
           redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
           authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
           scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
-      provider:
-        kakao:
-          authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
-          token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
-          user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
-          user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+    provider:
+      kakao:
+        authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
+        token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
+        user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
+        user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+jwt:
+  secret: ${JWT_SECRET}
