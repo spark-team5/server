@@ -1,10 +1,9 @@
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
-
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
     open-in-view: false
@@ -12,12 +11,3 @@ spring:
      ddl-auto: update
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
-
-
-elice:
-  api:
-    token: ${API_TOKEN}
-    url:
-      face: ${FACE_API_URL}
-      img: ${IMG_API_URL}
-      chat: ${CHAT_API_URL}
