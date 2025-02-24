@@ -8,9 +8,15 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-     ddl-auto: update
+      ddl-auto: update
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+
+face:
+  api:
+    url: ${API_URL}
+    token: ${API_TOKEN}
+
 security:
   oauth2:
     client:
