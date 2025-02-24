@@ -1,0 +1,68 @@
+name: Create Issue Branch
+on:
+  issues:
+    types: [assigned]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [closed]
+
+jobs:
+  create_issue_branch_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Debug Git repository
+        run: |
+          git remote -v
+          git branch
+          git status
+
+      - name: Determine Branch Name Based on Issue Labels
+        id: detect_branch
+        run: |
+          LABEL=$(echo '${{ toJSON(github.event.issue.labels) }}' | jq -r '.[0].name')
+          if [[ -z "$LABEL" || "$LABEL" == "null" ]]; then
+            LABEL="feature"  # 기본값 설정
+          fi
+          BRANCH_NAME="${LABEL}/issue-${{ github.event.issue.number }}"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "🔹 Detected branch name: $BRANCH_NAME"
+
+      - name: Create Issue Branch
+        uses: robvanderleek/create-issue-branch@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          default-branch: dev
+          branch-name: "${{ env.BRANCH_NAME }}"
+          overwrite-existing: true
+
+      - name: Check if PR already exists
+        id: check_pr
+        run: |
+          if gh pr list --state open --base dev --head "${{ env.BRANCH_NAME }}" --repo ${{ github.repository }} | grep "${{ env.BRANCH_NAME }}"; then
+            echo "pr_exists=true" >> $GITHUB_ENV
+          else
+            echo "pr_exists=false" >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Open Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: dev
+          branch: "${{ env.BRANCH_NAME }}"
+          title: "🚀 Pull Request #${{ github.event.issue.number }}"
+          body: |
+            🔥 **이슈 #${{ github.event.issue.number }}에 대한 PR 생성!** 🔥
+
+            - 이슈 링크: #${{ github.event.issue.number }}
+          delete-branch: false
+          allow-empty-commits: true

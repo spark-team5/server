@@ -1,0 +1,14 @@
+name: Close Issue When PR Merged
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  close_issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close linked issue
+        uses: peter-evans/close-issue@v2
+        with:
+          github_token: ${{ secrets.TOKEN }}
+          comment: "✅ PR이 머지되어 해당 이슈를 닫습니다."
