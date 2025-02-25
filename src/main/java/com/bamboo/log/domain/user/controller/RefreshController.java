@@ -30,4 +30,3 @@ public class RefreshController {
         return processTokenReissue.reissue(request, response);
     }
 }
-

@@ -1,14 +1,15 @@
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: update
+     ddl-auto: update
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
   security:
@@ -32,8 +33,14 @@ spring:
   jwt:
     secret: ${JWT_SECRET}
 
-face:
-  api:
-    url: ${API_URL}
-    token: ${API_TOKEN}
 
+<<<<<<< HEAD
+=======
+elice:
+  api:
+    token: ${API_TOKEN}
+    url:
+      face: ${FACE_API_URL}
+      img: ${IMG_API_URL}
+      chat: ${CHAT_API_URL}
+>>>>>>> 26d32802fbee3eb134324181a8ee6563352db34b

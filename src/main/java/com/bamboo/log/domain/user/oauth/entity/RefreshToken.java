@@ -37,4 +37,3 @@ public class RefreshToken {
     private Date createdAt;
 
 }
-

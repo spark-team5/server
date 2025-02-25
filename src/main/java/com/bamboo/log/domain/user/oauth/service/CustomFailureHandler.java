@@ -17,4 +17,3 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         response.sendRedirect("http://localhost:3000");
     }
 }
-
