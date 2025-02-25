@@ -1,9 +1,16 @@
 spring:
   datasource:
+<<<<<<< HEAD
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/OAuth2
     username: root
     password: heodongun0922
+=======
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+>>>>>>> 63ef269f5e00a859d97f46db4c165311a5033d33
   jpa:
     show-sql: true
     open-in-view: false
@@ -11,11 +18,16 @@ spring:
       ddl-auto: update
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+<<<<<<< HEAD
+=======
+
+>>>>>>> 63ef269f5e00a859d97f46db4c165311a5033d33
   security:
     oauth2:
       client:
         registration:
           kakao:
+<<<<<<< HEAD
             client-authentication-method: client_secret_post
             client-name: kakao
             client-id: 649c1e34aedc1a7db892333d900725f2
@@ -31,11 +43,34 @@ spring:
           user-name-attribute: id
   jwt:
     secret: fkldjfklsdjfaslkjflaksdjklfjaljewofijaenndlksjajojf
+=======
+            client-authentication-method: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_AUTHENTICATION_METHOD}
+            client-name: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME}
+            client-id: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
+            client-secret: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
+            redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
+            authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
+            scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
+        provider:
+          kakao:
+            authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
+            token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
+            user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
+            user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+  jwt:
+    secret: ${JWT_SECRET}
+>>>>>>> 63ef269f5e00a859d97f46db4c165311a5033d33
 
 elice:
   api:
     token: yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg4MzQxNDgsIm5iZiI6MTczODgzNDE0OCwia2V5X2lkIjoiZTdmNTUxN2MtYzNlZC00ZmVmLWFkNzYtNTUxZjA3ZDJmMjNiIn0.sMIASpWdac5l3GdIXshb7NnuB-PQlHMFyNurcpu4Cms
     url:
+<<<<<<< HEAD
       face: https://api-cloud-function.elice.io/d5ff1aef-c59f-433c-8e1c-f9b52ac4ab6a/predict
       img: https://api-cloud-function.elice.io/0133c2f7-9f3f-44b6-a3d6-c24ba8ef4510/generate
       chat: https://api-cloud-function.elice.io/9f071d94-a459-429d-a375-9601e521b079/v1/chat/completions
+=======
+      face: ${FACE_URL}
+      img: ${IMG_URL}
+      chat: ${CHAT_URL}
+>>>>>>> 63ef269f5e00a859d97f46db4c165311a5033d33
