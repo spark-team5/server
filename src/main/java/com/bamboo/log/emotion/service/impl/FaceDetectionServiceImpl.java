@@ -19,10 +19,10 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class FaceDetectionServiceImpl implements FaceDetectionService {
 
-    @Value("${face.api.url}")
+    @Value("${elice.api.url.face}")
     private String faceApiUrl;
 
-    @Value("${face.api.token}")
+    @Value("${elice.api.token}")
     private String faceToken;
 
     private final OkHttpClient client = new OkHttpClient();

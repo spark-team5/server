@@ -22,7 +22,7 @@ public class ImageGenerationService {
 
     public ImageGenerationService(RestTemplate restTemplate,
                                   @Value("${elice.api.token}") String apiKey,
-                                  @Value("${elice.api.url}") String apiUrl) {
+                                  @Value("${elice.api.url.img}") String apiUrl) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
