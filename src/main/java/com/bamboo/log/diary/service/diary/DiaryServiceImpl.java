@@ -4,12 +4,16 @@ import com.bamboo.log.diary.domain.Diary;
 import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
 import com.bamboo.log.diary.repository.DiaryRepository;
-import com.bamboo.log.diary.repository.TodaySummaryRepository;
-import com.bamboo.log.diary.service.mock.UserService;
+import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
+import org.springframework.security.core.GrantedAuthority;
+
 import com.bamboo.log.diary.service.summary.TodaySummaryService;
+import com.bamboo.log.domain.user.jwt.service.UserContextUtil;
+import com.bamboo.log.domain.user.oauth.dto.KakaoResponse;
+import com.bamboo.log.domain.user.oauth.entity.UserEntity;
 import com.bamboo.log.utils.ResponseHandler;
 import com.bamboo.log.utils.dto.ResponseForm;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,23 +27,14 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class DiaryServiceImpl implements DiaryService {
 
-    private final UserService userService;
+    private final UserContextUtil userContextUtil;
     private final DiaryRepository diaryRepository;
     private final TodaySummaryService todaySummaryService;
 
     @Override
     public ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest) {
-
-        // User 객체 검증 로직
-        // 해당 User 객체 찾을 수 없을 경우, 에러 반환
-        if(userService.existsById(createDiaryRequest.userId())) {
-            return ResponseHandler.create404Error(new ResponseForm(), new EntityNotFoundException("잘못된 유저 정보입니다."));
-        }
-
         // 해당 시점의 localDateTime 저장
         LocalDateTime localDateTime = LocalDateTime.now();
-
-        // alice api 연결 함수 호출
 
         // 데이터베이스에 저장
         Diary diary = saveDiary(createDiaryRequest, localDateTime);
@@ -58,8 +53,10 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
+        UserEntity user = userContextUtil.getUserEntity();
+
         Diary diary = Diary.builder()
-                .userId(createDiaryRequest.userId())
+                .user(user)
                 .context(createDiaryRequest.diaryDetail())
                 .createdAt(localDateTime)
                 .build();

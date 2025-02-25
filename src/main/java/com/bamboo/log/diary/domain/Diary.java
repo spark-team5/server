@@ -1,5 +1,6 @@
 package com.bamboo.log.diary.domain;
 
+import com.bamboo.log.domain.user.oauth.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +22,9 @@ public class Diary {
     @Column(name = "diary_id")
     private Long id;
 
-    @Column(nullable = false)
-    private String userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String context;
