@@ -1,0 +1,2072 @@
+diff --git a/.github/ISSUE_TEMPLATE/test-issue-template.yml b/.github/ISSUE_TEMPLATE/test-issue-template.yml
+deleted file mode 100644
+index 465c4ef..0000000
+--- a/.github/ISSUE_TEMPLATE/test-issue-template.yml
++++ /dev/null
+@@ -1,22 +0,0 @@
+-name: "💬 Test"
+-description: "코드 테스트"
+-labels: ["test"]
+-body:
+-  - type: textarea
+-    attributes:
+-      label: 📄 설명
+-      description: 검증하고자 하는 코드 대한 설명을 작성해 주세요.
+-      placeholder: 검증하고자 하는 코드와 검증 방식에 대해 최대한 자세히 작성해 주세요!
+-    validations:
+-      required: true
+-  - type: textarea
+-    attributes:
+-      label: ✅ 작업할 내용
+-      description: 할 일을 체크박스 형태로 작성해주세요.
+-      placeholder: 최대한 세분화 해서 적어주세요!
+-    validations:
+-      required: true
+-  - type: textarea
+-    attributes:
+-      label: 🙋🏻 참고 자료
+-      description: 참고 자료가 있다면 작성해 주세요.
+diff --git a/.github/workflows/auto-branch.yml b/.github/workflows/auto-branch.yml
+new file mode 100644
+index 0000000..4634d2b
+--- /dev/null
++++ b/.github/workflows/auto-branch.yml
+@@ -0,0 +1,17 @@
++name: Create Issue Branch
++on:
++  issues:
++    types: [ assigned ]
++  issue_comment:
++    types: [ created ]
++  pull_request:
++    types: [ closed ]
++
++jobs:
++  create_issue_branch_job:
++    runs-on: ubuntu-latest
++    steps:
++      - name: Create Issue Branch
++        uses: robvanderleek/create-issue-branch@main
++        env:
++          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+diff --git a/.github/workflows/close-issue.yml b/.github/workflows/close-issue.yml
+deleted file mode 100644
+index cd25d28..0000000
+--- a/.github/workflows/close-issue.yml
++++ /dev/null
+@@ -1,14 +0,0 @@
+-name: Close Issue When PR Merged
+-on:
+-  pull_request:
+-    types: [closed]
+-
+-jobs:
+-  close_issue:
+-    runs-on: ubuntu-latest
+-    steps:
+-      - name: Close linked issue
+-        uses: peter-evans/close-issue@v2
+-        with:
+-          github_token: ${{ secrets.TOKEN }}
+-          comment: "✅ PR이 머지되어 해당 이슈를 닫습니다."
+diff --git a/.github/workflows/create-branch.yml b/.github/workflows/create-branch.yml
+deleted file mode 100644
+index 443c204..0000000
+--- a/.github/workflows/create-branch.yml
++++ /dev/null
+@@ -1,68 +0,0 @@
+-name: Create Issue Branch
+-on:
+-  issues:
+-    types: [assigned]
+-  issue_comment:
+-    types: [created]
+-  pull_request:
+-    types: [closed]
+-
+-jobs:
+-  create_issue_branch_job:
+-    runs-on: ubuntu-latest
+-    steps:
+-      - name: Checkout repository
+-        uses: actions/checkout@v4
+-        with:
+-          fetch-depth: 0 
+-
+-      - name: Debug Git repository
+-        run: |
+-          git remote -v
+-          git branch
+-          git status
+-
+-      - name: Determine Branch Name Based on Issue Labels
+-        id: detect_branch
+-        run: |
+-          LABEL=$(echo '${{ toJSON(github.event.issue.labels) }}' | jq -r '.[0].name')
+-          if [[ -z "$LABEL" || "$LABEL" == "null" ]]; then
+-            LABEL="feature"  # 기본값 설정
+-          fi
+-          BRANCH_NAME="${LABEL}/issue-${{ github.event.issue.number }}"
+-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+-          echo "🔹 Detected branch name: $BRANCH_NAME"
+-
+-      - name: Create Issue Branch
+-        uses: robvanderleek/create-issue-branch@main
+-        env:
+-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-        with:
+-          default-branch: dev
+-          branch-name: "${{ env.BRANCH_NAME }}"
+-          overwrite-existing: true
+-
+-      - name: Check if PR already exists
+-        id: check_pr
+-        run: |
+-          if gh pr list --state open --base dev --head "${{ env.BRANCH_NAME }}" --repo ${{ github.repository }} | grep "${{ env.BRANCH_NAME }}"; then
+-            echo "pr_exists=true" >> $GITHUB_ENV
+-          else
+-            echo "pr_exists=false" >> $GITHUB_ENV
+-          fi
+-        env:
+-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-
+-      - name: Open Pull Request
+-        uses: peter-evans/create-pull-request@v5
+-        with:
+-          token: ${{ secrets.GITHUB_TOKEN }}
+-          base: dev
+-          branch: "${{ env.BRANCH_NAME }}"
+-          title: "🚀 Pull Request #${{ github.event.issue.number }}"
+-          body: |
+-            🔥 **이슈 #${{ github.event.issue.number }}에 대한 PR 생성!** 🔥
+-
+-            - 이슈 링크: #${{ github.event.issue.number }}
+-          delete-branch: false
+-          allow-empty-commits: true
+diff --git a/.github/workflows/delete-branch.yml b/.github/workflows/delete-branch.yml
+deleted file mode 100644
+index ad1416a..0000000
+--- a/.github/workflows/delete-branch.yml
++++ /dev/null
+@@ -1,14 +0,0 @@
+-name: Delete Merged Branch
+-on:
+-  pull_request:
+-    types: [closed]
+-
+-jobs:
+-  delete_merged_branch:
+-    runs-on: ubuntu-latest
+-    if: github.event.pull_request.merged == true
+-    steps:
+-      - name: Delete branch if merged
+-        uses: github-actions/delete-merged-branch@v4
+-        with:
+-          github_token: ${{ secrets.TOKEN }}
+diff --git a/.gitignore b/.gitignore
+index a00fec8..e48b6be 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -34,6 +34,4 @@ out/
+ /.nb-gradle/
+ 
+ ### VS Code ###
+-.vscode/
+-
+-.env
++.vscode/
+\ No newline at end of file
+diff --git a/build.gradle b/build.gradle
+index dd9d89a..56f4f0e 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -24,30 +24,40 @@ repositories {
+ }
+ 
+ dependencies {
+-    implementation 'org.springframework.boot:spring-boot-starter-web'
+-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+-    implementation 'org.springframework.boot:spring-boot-starter-security'
+-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+-    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+-    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+-
+-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+-    runtimeOnly 'com.mysql:mysql-connector-j'
+-
+-    compileOnly 'org.projectlombok:lombok'
+-    annotationProcessor 'org.projectlombok:lombok'
+-
+-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+-    testImplementation 'org.springframework.security:spring-security-test'
+-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+-
+-    // okhttp
+-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
++    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.4'
++    implementation 'org.springframework.boot:spring-boot-starter-web:3.1.0'
++    testImplementation 'org.projectlombok:lombok:1.18.26'
++    compileOnly 'org.projectlombok:lombok:1.18.26'
++    runtimeOnly 'com.mysql:mysql-connector-j:8.0.32'
++    annotationProcessor 'org.projectlombok:lombok:1.18.26'
++    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.0'
++
++    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
++    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
++
++    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
++
++    // Spring Doc
++    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
++
++    // Spring Security
++    implementation 'org.springframework.boot:spring-boot-starter-security:3.0.4'
++
++    // JWT
++    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
++    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
++    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
++
++    // chatGPT API
++    implementation 'io.github.flashvayne:chatgpt-spring-boot-starter:1.0.4'
++
++    // JSON 라이브러리
++    implementation 'org.json:json:20230227'
++
++    implementation 'org.springframework:spring-test:6.0.6'
++    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.0'
+ }
+ 
+ tasks.named('test') {
+     useJUnitPlatform()
+-}
+\ No newline at end of file
++}
+diff --git a/src/main/java/com/bamboo/log/common/config/CorsMvcConfig.java b/src/main/java/com/bamboo/log/common/config/CorsMvcConfig.java
+deleted file mode 100644
+index 2f3565b..0000000
+--- a/src/main/java/com/bamboo/log/common/config/CorsMvcConfig.java
++++ /dev/null
+@@ -1,20 +0,0 @@
+-package com.bamboo.log.common.config;
+-
+-import org.springframework.context.annotation.Configuration;
+-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+-
+-@Configuration
+-public class CorsMvcConfig implements WebMvcConfigurer {
+-
+-    @Override
+-    public void addCorsMappings(CorsRegistry corsRegistry) {
+-
+-        corsRegistry.addMapping("/**")
+-                .exposedHeaders("Set-Cookie")
+-                //프론트 url 넣기
+-                .allowedOrigins("http://localhost:3000");
+-    }
+-}
+-
+-
+diff --git a/src/main/java/com/bamboo/log/common/config/SecurityConfig.java b/src/main/java/com/bamboo/log/common/config/SecurityConfig.java
+deleted file mode 100644
+index 38ab583..0000000
+--- a/src/main/java/com/bamboo/log/common/config/SecurityConfig.java
++++ /dev/null
+@@ -1,78 +0,0 @@
+-package com.bamboo.log.common.config;
+-
+-import com.bamboo.log.domain.user.jwt.service.JWTFilter;
+-import com.bamboo.log.domain.user.jwt.service.JWTUtil;
+-import com.bamboo.log.domain.user.logout.CustomLogoutFilter;
+-import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
+-import com.bamboo.log.domain.user.oauth.service.CustomFailureHandler;
+-import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
+-import com.bamboo.log.domain.user.oauth.service.CustomSuccessHandler;
+-import jakarta.servlet.http.HttpServletRequest;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.context.annotation.Bean;
+-import org.springframework.context.annotation.Configuration;
+-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+-import org.springframework.security.config.http.SessionCreationPolicy;
+-import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+-import org.springframework.security.web.SecurityFilterChain;
+-import org.springframework.security.web.authentication.logout.LogoutFilter;
+-import org.springframework.web.cors.CorsConfiguration;
+-import org.springframework.web.cors.CorsConfigurationSource;
+-
+-import java.util.Collections;
+-
+-@Configuration
+-@EnableWebSecurity
+-@RequiredArgsConstructor
+-public class SecurityConfig {
+-
+-    private final RefreshRepository refreshRepository;
+-    private final CustomOAuth2UserService customOAuth2UserService;
+-    private final CustomSuccessHandler customSuccessHandler;
+-    private final CustomFailureHandler customFailureHandler;
+-    private final JWTUtil jwtUtil;
+-
+-
+-    @Bean
+-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+-        http.csrf((auth) -> auth.disable());
+-        http.formLogin((auth) -> auth.disable());
+-        http.httpBasic((auth) -> auth.disable());
+-        http.oauth2Login((oauth2) -> oauth2
+-                .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+-                        .userService(customOAuth2UserService))
+-                .successHandler(customSuccessHandler)
+-                .failureHandler(customFailureHandler)
+-        );
+-        http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+-
+-        //이쪽에다가 각각의 엔드포인트를 넣어야함
+-        http.authorizeHttpRequests((auth) -> auth
+-                .requestMatchers("/refresh").permitAll()
+-                .requestMatchers("/logout").hasAnyRole("USER")
+-                .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
+-                .anyRequest().authenticated());
+-
+-
+-        http.sessionManagement((session) -> session
+-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+-        http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
+-        http.cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+-            @Override
+-            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+-                CorsConfiguration configuration = new CorsConfiguration();
+-                //프론트 url 넣기
+-                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+-                configuration.setAllowedMethods(Collections.singletonList("*"));
+-                configuration.setAllowCredentials(true);
+-                configuration.setAllowedHeaders(Collections.singletonList("*"));
+-                configuration.setMaxAge(3600L);
+-                configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
+-                configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+-                return configuration;
+-            }
+-        }));
+-        return http.build();
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/common/config/SwaggerConfig.java b/src/main/java/com/bamboo/log/common/config/SwaggerConfig.java
+deleted file mode 100644
+index dd0a87a..0000000
+--- a/src/main/java/com/bamboo/log/common/config/SwaggerConfig.java
++++ /dev/null
+@@ -1,12 +0,0 @@
+-package com.bamboo.log.common.config;
+-
+-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+-import io.swagger.v3.oas.annotations.info.Info;
+-import io.swagger.v3.oas.annotations.security.SecurityScheme;
+-import org.springframework.context.annotation.Configuration;
+-
+-@Configuration
+-@OpenAPIDefinition(info = @Info(title = "ForRest", version = "v1"))
+-public class SwaggerConfig {
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/diary/api/DiaryController.java b/src/main/java/com/bamboo/log/diary/api/DiaryController.java
+new file mode 100644
+index 0000000..0b4e1c5
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/api/DiaryController.java
+@@ -0,0 +1,33 @@
++package com.bamboo.log.diary.api;
++
++import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
++import com.bamboo.log.diary.service.diary.DiaryService;
++import com.bamboo.log.utils.ResponseHandler;
++import com.bamboo.log.utils.dto.ResponseForm;
++import io.swagger.v3.oas.annotations.Operation;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++import io.swagger.v3.oas.annotations.tags.Tag;
++
++import java.util.List;
++
++@RestController
++@RequiredArgsConstructor
++@RequestMapping("/diary")
++@Tag(name = "Diary API", description = "일기 관련 API")
++public class DiaryController {
++
++    private final DiaryService diaryService;
++
++    @Operation(summary = "랜덤 주제 조회")
++    @PostMapping("/create")
++    public ResponseEntity lookupRandomTopics(@RequestBody CreateDiaryRequest createDiaryRequest) {
++        try {
++            return diaryService.createDiary(createDiaryRequest);
++        } catch (Exception e) {
++            return ResponseHandler.create500Error(new ResponseForm(), e);
++        }
++    }
++}
+diff --git a/src/main/java/com/bamboo/log/diary/domain/Diary.java b/src/main/java/com/bamboo/log/diary/domain/Diary.java
+new file mode 100644
+index 0000000..c820a2c
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/domain/Diary.java
+@@ -0,0 +1,33 @@
++package com.bamboo.log.diary.domain;
++
++import jakarta.persistence.*;
++import lombok.AllArgsConstructor;
++import lombok.Builder;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++
++import java.time.LocalDateTime;
++
++@Entity
++@Getter
++@Builder
++@AllArgsConstructor
++@NoArgsConstructor
++@Table(name = "diaries")
++public class Diary {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    @Column(name = "diary_id")
++    private Long id;
++
++    @Column(nullable = false)
++    private String userId;
++
++    @Column(columnDefinition = "TEXT", nullable = false)
++    private String context;
++
++    @Column(nullable = false)
++    private LocalDateTime createdAt;
++
++}
+diff --git a/src/main/java/com/bamboo/log/diary/domain/TodaySummary.java b/src/main/java/com/bamboo/log/diary/domain/TodaySummary.java
+new file mode 100644
+index 0000000..24af228
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/domain/TodaySummary.java
+@@ -0,0 +1,29 @@
++package com.bamboo.log.diary.domain;
++
++import jakarta.persistence.*;
++import lombok.AllArgsConstructor;
++import lombok.Getter;
++import lombok.Builder;
++import lombok.NoArgsConstructor;
++
++@Entity
++@Getter
++@Builder
++@NoArgsConstructor
++@AllArgsConstructor
++@Table(name = "today_summaries")
++public class TodaySummary {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Long id;
++
++    @Column(nullable = false)
++    private Long diaryId;
++
++    @Lob
++    @Column(columnDefinition = "LONGBLOB", nullable = false)
++    private byte[] imageData;
++
++}
++
+diff --git a/src/main/java/com/bamboo/log/diary/dto/request/CreateDiaryRequest.java b/src/main/java/com/bamboo/log/diary/dto/request/CreateDiaryRequest.java
+new file mode 100644
+index 0000000..084708d
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/dto/request/CreateDiaryRequest.java
+@@ -0,0 +1,9 @@
++package com.bamboo.log.diary.dto.request;
++
++import jakarta.validation.constraints.NotEmpty;
++
++import java.util.List;
++
++public record CreateDiaryRequest(@NotEmpty(message = "User's Id shouldn't be empty") String userId,
++                                 @NotEmpty(message = "Diary Description shouldn't be empty") String diaryDetail) {
++}
+diff --git a/src/main/java/com/bamboo/log/diary/dto/response/CreateDiaryResponse.java b/src/main/java/com/bamboo/log/diary/dto/response/CreateDiaryResponse.java
+new file mode 100644
+index 0000000..9e994c0
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/dto/response/CreateDiaryResponse.java
+@@ -0,0 +1,8 @@
++package com.bamboo.log.diary.dto.response;
++
++import jakarta.validation.constraints.NotEmpty;
++
++import java.time.LocalDateTime;
++
++public record CreateDiaryResponse(@NotEmpty(message = "created shouldn't be empty") LocalDateTime created) {
++}
+diff --git a/src/main/java/com/bamboo/log/diary/repository/DiaryRepository.java b/src/main/java/com/bamboo/log/diary/repository/DiaryRepository.java
+new file mode 100644
+index 0000000..416db42
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/repository/DiaryRepository.java
+@@ -0,0 +1,7 @@
++package com.bamboo.log.diary.repository;
++
++import com.bamboo.log.diary.domain.Diary;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++public interface DiaryRepository extends JpaRepository<Diary, Long> {
++}
+diff --git a/src/main/java/com/bamboo/log/diary/repository/TodaySummaryRepository.java b/src/main/java/com/bamboo/log/diary/repository/TodaySummaryRepository.java
+new file mode 100644
+index 0000000..4093d83
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/repository/TodaySummaryRepository.java
+@@ -0,0 +1,7 @@
++package com.bamboo.log.diary.repository;
++
++import com.bamboo.log.diary.domain.TodaySummary;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++public interface TodaySummaryRepository extends JpaRepository<TodaySummary, Long> {
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/diary/DiaryService.java b/src/main/java/com/bamboo/log/diary/service/diary/DiaryService.java
+new file mode 100644
+index 0000000..50cb4ac
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/diary/DiaryService.java
+@@ -0,0 +1,10 @@
++package com.bamboo.log.diary.service.diary;
++
++import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
++import org.springframework.http.ResponseEntity;
++
++public interface DiaryService {
++
++    ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest);
++
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/diary/DiaryServiceImpl.java b/src/main/java/com/bamboo/log/diary/service/diary/DiaryServiceImpl.java
+new file mode 100644
+index 0000000..5c201fd
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/diary/DiaryServiceImpl.java
+@@ -0,0 +1,70 @@
++package com.bamboo.log.diary.service.diary;
++
++import com.bamboo.log.diary.domain.Diary;
++import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
++import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
++import com.bamboo.log.diary.repository.DiaryRepository;
++import com.bamboo.log.diary.repository.TodaySummaryRepository;
++import com.bamboo.log.diary.service.mock.UserService;
++import com.bamboo.log.diary.service.summary.TodaySummaryService;
++import com.bamboo.log.utils.ResponseHandler;
++import com.bamboo.log.utils.dto.ResponseForm;
++import jakarta.persistence.EntityNotFoundException;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.io.IOException;
++import java.time.LocalDateTime;
++
++@Service
++@Transactional
++@RequiredArgsConstructor
++public class DiaryServiceImpl implements DiaryService {
++
++    private final UserService userService;
++    private final DiaryRepository diaryRepository;
++    private final TodaySummaryService todaySummaryService;
++
++    @Override
++    public ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest) {
++
++        // User 객체 검증 로직
++        // 해당 User 객체 찾을 수 없을 경우, 에러 반환
++        if(userService.existsById(createDiaryRequest.userId())) {
++            return ResponseHandler.create404Error(new ResponseForm(), new EntityNotFoundException("잘못된 유저 정보입니다."));
++        }
++
++        // 해당 시점의 localDateTime 저장
++        LocalDateTime localDateTime = LocalDateTime.now();
++
++        // alice api 연결 함수 호출
++
++        // 데이터베이스에 저장
++        Diary diary = saveDiary(createDiaryRequest, localDateTime);
++
++        byte[] todayImage = todaySummaryService.createTodaySummaryImage(createDiaryRequest.diaryDetail());
++
++        // todaySummaryImage 데이터베이스에 저장
++        try {
++            todaySummaryService.saveTodaySummaryImage(todayImage, diary.getId());
++        } catch (IOException e) {
++            return ResponseHandler.create500Error(new ResponseForm(), e);
++        }
++
++        // 201 code 반환
++        return ResponseHandler.create201Response(new ResponseForm(), new CreateDiaryResponse(localDateTime));
++    }
++
++    private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
++        Diary diary = Diary.builder()
++                .userId(createDiaryRequest.userId())
++                .context(createDiaryRequest.diaryDetail())
++                .createdAt(localDateTime)
++                .build();
++
++        return diaryRepository.save(diary);
++    }
++
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/mock/MockUserService.java b/src/main/java/com/bamboo/log/diary/service/mock/MockUserService.java
+new file mode 100644
+index 0000000..86824f2
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/mock/MockUserService.java
+@@ -0,0 +1,12 @@
++package com.bamboo.log.diary.service.mock;
++
++import org.springframework.stereotype.Service;
++
++@Service
++public class MockUserService implements UserService {
++
++    @Override
++    public boolean existsById(String userId) {
++        return true;
++    }
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/mock/UserService.java b/src/main/java/com/bamboo/log/diary/service/mock/UserService.java
+new file mode 100644
+index 0000000..0b37f9a
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/mock/UserService.java
+@@ -0,0 +1,5 @@
++package com.bamboo.log.diary.service.mock;
++
++public interface UserService {
++    boolean existsById(String userId);
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryService.java b/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryService.java
+new file mode 100644
+index 0000000..598d786
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryService.java
+@@ -0,0 +1,11 @@
++package com.bamboo.log.diary.service.summary;
++
++import org.springframework.web.multipart.MultipartFile;
++
++import java.io.IOException;
++
++public interface TodaySummaryService {
++
++    void saveTodaySummaryImage(byte[] image, Long diaryId) throws IOException;
++    byte[] createTodaySummaryImage(String prompt);
++}
+diff --git a/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryServiceImpl.java b/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryServiceImpl.java
+new file mode 100644
+index 0000000..06df2dd
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/diary/service/summary/TodaySummaryServiceImpl.java
+@@ -0,0 +1,46 @@
++package com.bamboo.log.diary.service.summary;
++
++import com.bamboo.log.diary.domain.TodaySummary;
++import com.bamboo.log.diary.repository.TodaySummaryRepository;
++import com.bamboo.log.elice.service.ImageGenerationService;
++import com.bamboo.log.utils.ResponseHandler;
++import com.bamboo.log.utils.dto.ResponseForm;
++import lombok.RequiredArgsConstructor;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++import org.springframework.web.multipart.MultipartFile;
++
++import java.io.IOException;
++import java.util.Optional;
++
++@Service
++@Transactional
++@RequiredArgsConstructor
++public class TodaySummaryServiceImpl implements TodaySummaryService {
++
++    private final TodaySummaryRepository todaySummaryRepository;
++    private final ImageGenerationService imageGenerationService;
++
++    @Override
++    public void saveTodaySummaryImage(byte[] image, Long diaryId) throws IOException {
++        TodaySummary todaySummary = TodaySummary.builder()
++                .diaryId(diaryId)
++                .imageData(image)
++                .build();
++
++        todaySummaryRepository.save(todaySummary);
++    }
++
++    @Override
++    public byte[] createTodaySummaryImage(String prompt) {
++        try {
++            byte[] imageBytes = imageGenerationService.generateImage(prompt);
++
++            return imageBytes;
++        } catch (IOException e) {
++            throw new RuntimeException("이미지 생성 중에 문제가 발생했습니다.");
++        }
++
++    }
++
++}
+diff --git a/src/main/java/com/bamboo/log/domain/user/controller/RefreshController.java b/src/main/java/com/bamboo/log/domain/user/controller/RefreshController.java
+deleted file mode 100644
+index 3d38673..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/controller/RefreshController.java
++++ /dev/null
+@@ -1,33 +0,0 @@
+-package com.bamboo.log.domain.user.controller;
+-
+-import com.bamboo.log.domain.user.refresh.service.ProcessTokenReissue;
+-import io.swagger.v3.oas.annotations.Operation;
+-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-@RestController
+-@RequiredArgsConstructor
+-public class RefreshController {
+-
+-    private final ProcessTokenReissue processTokenReissue;
+-
+-    @Operation(summary = "토큰 갱신", description = "Refresh Token을 사용하여 Access Token을 재발급합니다.")
+-    @ApiResponses({
+-            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+-            @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token"),
+-            @ApiResponse(responseCode = "403", description = "Refresh Token이 만료됨")
+-    })
+-    @PostMapping("/refresh")
+-    public ResponseEntity<?> reissue(
+-            HttpServletRequest request,
+-            HttpServletResponse response) {
+-        return processTokenReissue.reissue(request, response);
+-    }
+-}
+-
+diff --git a/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTFilter.java b/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTFilter.java
+deleted file mode 100644
+index 36c936f..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTFilter.java
++++ /dev/null
+@@ -1,76 +0,0 @@
+-package com.bamboo.log.domain.user.jwt.service;
+-
+-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+-import com.bamboo.log.domain.user.oauth.dto.UserDTO;
+-import io.jsonwebtoken.ExpiredJwtException;
+-import jakarta.servlet.FilterChain;
+-import jakarta.servlet.ServletException;
+-import jakarta.servlet.http.Cookie;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+-import org.springframework.security.core.Authentication;
+-import org.springframework.security.core.context.SecurityContextHolder;
+-import org.springframework.web.filter.OncePerRequestFilter;
+-
+-import java.io.IOException;
+-import java.io.PrintWriter;
+-
+-@RequiredArgsConstructor
+-public class JWTFilter extends OncePerRequestFilter {
+-
+-    private final JWTUtil jwtUtil;
+-
+-
+-    @Override
+-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+-        // 헤더에서 Authorization에 담긴 토큰을 꺼냄
+-        String accessToken = request.getHeader("Authorization");
+-
+-        if (accessToken != null && accessToken.startsWith("Bearer ")) {
+-            accessToken = accessToken.substring(7);  // "Bearer "의 길이는 7
+-        }
+-
+-        // 토큰이 없다면 다음 필터로 넘김
+-        if (accessToken == null|| accessToken.isEmpty()) {
+-            filterChain.doFilter(request, response);
+-            return;
+-        }
+-
+-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
+-        try {
+-            jwtUtil.isExpired(accessToken);
+-        } catch (ExpiredJwtException e) {
+-            // 만료된 토큰일 경우 응답 본문에 메시지 출력 및 상태 코드 설정
+-            PrintWriter writer = response.getWriter();
+-            writer.print("access token expired");
+-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+-            return;
+-        }
+-
+-        // 토큰이 access인지 확인 (발급시 페이로드에 명시)
+-        String category = jwtUtil.getCategory(accessToken);
+-        if (!category.equals("access")) {
+-            // 유효하지 않은 토큰일 경우 응답 본문에 메시지 출력 및 상태 코드 설정
+-            PrintWriter writer = response.getWriter();
+-            writer.print("invalid access token");
+-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+-            return;
+-        }
+-
+-
+-        String username = jwtUtil.getUsername(accessToken);
+-        String role = jwtUtil.getRole(accessToken);
+-        String name=jwtUtil.getName(accessToken);
+-        UserDTO userDTO = UserDTO.builder()
+-                .name(name)
+-                .username(username)
+-                .role(role)
+-                .build();
+-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+-        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+-        SecurityContextHolder.getContext().setAuthentication(authToken);
+-        filterChain.doFilter(request, response);
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTUtil.java b/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTUtil.java
+deleted file mode 100644
+index d7f3a78..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/jwt/service/JWTUtil.java
++++ /dev/null
+@@ -1,57 +0,0 @@
+-package com.bamboo.log.domain.user.jwt.service;
+-
+-import io.jsonwebtoken.JwtException;
+-import io.jsonwebtoken.Jwts;
+-import org.springframework.beans.factory.annotation.Value;
+-import org.springframework.stereotype.Component;
+-
+-import javax.crypto.SecretKey;
+-import javax.crypto.spec.SecretKeySpec;
+-import java.nio.charset.StandardCharsets;
+-import java.util.Date;
+-
+-@Component
+-public class JWTUtil {
+-
+-    private SecretKey secretKey;
+-
+-    public JWTUtil(@Value("${spring.jwt.secret}")String secret) {
+-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+-    }
+-
+-    public String getUsername(String token) {
+-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
+-    }
+-
+-    public String getRole(String token) {
+-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+-    }
+-
+-    public Boolean isExpired(String token) {
+-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+-    }
+-
+-    public String getCategory(String token) {
+-        try {
+-            // 토큰에서 카테고리 정보를 추출합니다.
+-            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
+-        } catch (JwtException e) {
+-            throw new RuntimeException("토큰에서 카테고리를 추출하는 중 오류가 발생했습니다.");
+-        }
+-    }
+-
+-    public String getName(String token){
+-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("name", String.class);
+-    }
+-    public String createJwt(String category,String name,String username, String role, Long expiredMs) {
+-        return Jwts.builder()
+-                .claim("category",category)
+-                .claim("username", username)
+-                .claim("name",name)
+-                .claim("role", role)
+-                .issuedAt(new Date(System.currentTimeMillis()))
+-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+-                .signWith(secretKey)
+-                .compact();
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/jwt/service/UserContextUtil.java b/src/main/java/com/bamboo/log/domain/user/jwt/service/UserContextUtil.java
+deleted file mode 100644
+index 6f196f7..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/jwt/service/UserContextUtil.java
++++ /dev/null
+@@ -1,33 +0,0 @@
+-package com.bamboo.log.domain.user.jwt.service;
+-
+-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+-import org.springframework.security.core.Authentication;
+-import org.springframework.security.core.context.SecurityContextHolder;
+-import org.springframework.stereotype.Component;
+-
+-import java.util.Optional;
+-
+-@Component
+-public class UserContextUtil {
+-
+-    public Optional<CustomOAuth2User> getCurrentUser() {
+-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+-            return Optional.empty();
+-        }
+-        return Optional.of((CustomOAuth2User) authentication.getPrincipal());
+-    }
+-
+-    public String getUsername() {
+-        return getCurrentUser()
+-                .map(CustomOAuth2User::getUsername)
+-                .orElseThrow(() -> new RuntimeException("User not authenticated"));
+-    }
+-
+-    public String getName() {
+-        return getCurrentUser()
+-                .map(CustomOAuth2User::getName)
+-                .orElseThrow(() -> new RuntimeException("User not authenticated"));
+-    }
+-
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/logout/CustomLogoutFilter.java b/src/main/java/com/bamboo/log/domain/user/logout/CustomLogoutFilter.java
+deleted file mode 100644
+index 3ff12c5..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/logout/CustomLogoutFilter.java
++++ /dev/null
+@@ -1,94 +0,0 @@
+-package com.bamboo.log.domain.user.logout;
+-
+-import com.bamboo.log.domain.user.jwt.service.JWTUtil;
+-import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
+-import io.jsonwebtoken.ExpiredJwtException;
+-import jakarta.servlet.FilterChain;
+-import jakarta.servlet.ServletException;
+-import jakarta.servlet.ServletRequest;
+-import jakarta.servlet.ServletResponse;
+-import jakarta.servlet.http.Cookie;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import lombok.RequiredArgsConstructor;
+-import lombok.extern.slf4j.Slf4j;
+-import org.springframework.transaction.annotation.Transactional;
+-import org.springframework.web.filter.GenericFilterBean;
+-
+-import java.io.IOException;
+-
+-@RequiredArgsConstructor
+-@Transactional
+-@Slf4j
+-public class CustomLogoutFilter extends GenericFilterBean {
+-
+-    private final JWTUtil jwtUtil;
+-    private final RefreshRepository refreshRepository;
+-
+-    @Override
+-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+-        doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
+-    }
+-
+-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+-
+-        String requestUri = request.getRequestURI();
+-        if (!requestUri.matches("^\\/logout$")) {
+-            filterChain.doFilter(request, response);
+-            return;
+-        }
+-
+-        String requestMethod = request.getMethod();
+-        if (!requestMethod.equals("POST")) {
+-            filterChain.doFilter(request, response);
+-            return;
+-        }
+-
+-        String refresh = null;
+-        Cookie[] cookies = request.getCookies();
+-        for (Cookie cookie : cookies) {
+-            if (cookie.getName().equals("refresh")) {
+-                refresh = cookie.getValue();
+-            }
+-        }
+-
+-        if (refresh == null) {
+-            log.error("로그아웃 시 리프레시 토큰이 없습니다.");
+-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+-            return;
+-        }
+-
+-        try {
+-            jwtUtil.isExpired(refresh);
+-        } catch (ExpiredJwtException e) {
+-            log.error("리프레시 토큰이 만료되었습니다. refresh token: {}", refresh);
+-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+-            return;
+-        }
+-
+-        String category = jwtUtil.getCategory(refresh);
+-        if (!category.equals("refresh")) {
+-            log.error("유효하지 않은 리프레시 토큰입니다. refresh token: {}", refresh);
+-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+-            return;
+-        }
+-
+-        Boolean isExist = refreshRepository.existsByToken(refresh);
+-        if (!isExist) {
+-            log.error("리프레시 토큰이 데이터베이스에 존재하지 않습니다. refresh token: {}", refresh);
+-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+-            return;
+-        }
+-
+-        refreshRepository.deleteByToken(refresh);
+-        log.info("리프레시 토큰이 데이터베이스에서 삭제되었습니다. refresh token: {}", refresh);
+-
+-        Cookie cookie = new Cookie("refresh", null);
+-        cookie.setMaxAge(0);
+-        cookie.setPath("/");
+-
+-        response.addCookie(cookie);
+-        log.info("리프레시 토큰 쿠키가 삭제되었습니다.");
+-        response.setStatus(HttpServletResponse.SC_OK);
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/dto/CustomOAuth2User.java b/src/main/java/com/bamboo/log/domain/user/oauth/dto/CustomOAuth2User.java
+deleted file mode 100644
+index 707915d..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/dto/CustomOAuth2User.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.dto;
+-
+-import org.springframework.security.core.GrantedAuthority;
+-import org.springframework.security.oauth2.core.user.OAuth2User;
+-
+-import java.util.ArrayList;
+-import java.util.Collection;
+-import java.util.Map;
+-
+-public class CustomOAuth2User implements OAuth2User {
+-
+-    private final UserDTO userDTO;
+-
+-    public CustomOAuth2User(UserDTO userDTO) {
+-        this.userDTO = userDTO;
+-    }
+-
+-    @Override
+-    public Map<String, Object> getAttributes() {
+-        return null;
+-    }
+-
+-    @Override
+-    public Collection<? extends GrantedAuthority> getAuthorities() {
+-
+-        Collection<GrantedAuthority> collection = new ArrayList<>();
+-
+-        collection.add(new GrantedAuthority() {
+-
+-            @Override
+-            public String getAuthority() {
+-
+-                return userDTO.getRole();
+-            }
+-        });
+-
+-        return collection;
+-    }
+-
+-    @Override
+-    public String getName() {
+-        return userDTO.getName();
+-    }
+-
+-    public String getUsername() {
+-        return userDTO.getUsername();
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/dto/KakaoResponse.java b/src/main/java/com/bamboo/log/domain/user/oauth/dto/KakaoResponse.java
+deleted file mode 100644
+index 2e16ed0..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/dto/KakaoResponse.java
++++ /dev/null
+@@ -1,40 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.dto;
+-
+-import java.util.Map;
+-
+-public class KakaoResponse implements OAuth2Response {
+-    private final Map<String, Object> attributes;
+-    private final Map<String, Object> kakaoAccount;
+-    private final Map<String, Object> profile;
+-
+-    public KakaoResponse(Map<String, Object> attributes) {
+-        this.attributes = attributes;
+-        this.kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+-        this.profile = (Map<String, Object>) kakaoAccount.get("profile");
+-    }
+-
+-    @Override
+-    public String getProvider() {
+-        return "kakao";
+-    }
+-
+-    @Override
+-    public String getProviderId() {
+-        return attributes.get("id").toString();
+-    }
+-
+-    @Override
+-    public String getEmail() {
+-        return kakaoAccount.get("email") != null ? kakaoAccount.get("email").toString() : "N/A";
+-    }
+-
+-    @Override
+-    public String getName() {
+-        return profile.get("nickname").toString();
+-    }
+-
+-    @Override
+-    public Map<String, Object> getAttributes() {
+-        return attributes;
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/dto/OAuth2Response.java b/src/main/java/com/bamboo/log/domain/user/oauth/dto/OAuth2Response.java
+deleted file mode 100644
+index 28f415d..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/dto/OAuth2Response.java
++++ /dev/null
+@@ -1,11 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.dto;
+-
+-import java.util.Map;
+-
+-public interface OAuth2Response {
+-    String getProvider();
+-    String getProviderId();
+-    String getEmail();
+-    String getName();
+-    Map<String, Object> getAttributes();
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/dto/UserDTO.java b/src/main/java/com/bamboo/log/domain/user/oauth/dto/UserDTO.java
+deleted file mode 100644
+index f76f9a2..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/dto/UserDTO.java
++++ /dev/null
+@@ -1,14 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.dto;
+-
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
+-import lombok.Getter;
+-
+-@AllArgsConstructor
+-@Builder
+-@Getter
+-public class UserDTO {
+-    private String name;
+-    private String username;
+-    private String role;
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/entity/RefreshToken.java b/src/main/java/com/bamboo/log/domain/user/oauth/entity/RefreshToken.java
+deleted file mode 100644
+index e02ceb4..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/entity/RefreshToken.java
++++ /dev/null
+@@ -1,40 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.entity;
+-
+-import jakarta.persistence.*;
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+-
+-import java.util.Date;
+-@Entity
+-@Table(name = "refresh_token")
+-@Getter
+-@NoArgsConstructor
+-@AllArgsConstructor
+-@Builder
+-public class RefreshToken {
+-
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+-    private Long id;
+-
+-    @Column(nullable = false)
+-    private String name;
+-
+-    @Column(nullable = false)
+-    private String username;
+-
+-    @Column(nullable = false)
+-    private String token;
+-
+-    @Column(name = "expires_at", nullable = false)
+-    @Temporal(TemporalType.TIMESTAMP)
+-    private Date expiresAt;
+-
+-    @Column(name = "created_at", nullable = false)
+-    @Temporal(TemporalType.TIMESTAMP)
+-    private Date createdAt;
+-
+-}
+-
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/entity/UserEntity.java b/src/main/java/com/bamboo/log/domain/user/oauth/entity/UserEntity.java
+deleted file mode 100644
+index fcf2836..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/entity/UserEntity.java
++++ /dev/null
+@@ -1,45 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.entity;
+-
+-import jakarta.persistence.*;
+-import lombok.Builder;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+-
+-@Getter
+-@NoArgsConstructor
+-@Entity
+-@Table(name="users")
+-public class UserEntity {
+-
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+-    private Long id;
+-
+-    @Column(unique = true, nullable = false)
+-    private String username;
+-
+-
+-    private String name;
+-    private String email;
+-    private String role;
+-    private String profile_img_url;
+-
+-    @Builder
+-    public UserEntity(String username, String name, String email, String role,String profile_img_url) {
+-        this.username = username;
+-        this.name = name;
+-        this.email = email;
+-        this.role = role;
+-        this.profile_img_url = profile_img_url;
+-    }
+-
+-    public UserEntity updateEmailAndName(String email, String name) {
+-        return UserEntity.builder()
+-                .username(this.username)
+-                .name(name)
+-                .email(email)
+-                .role(this.role)
+-                .profile_img_url(this.profile_img_url)
+-                .build();
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/repository/RefreshRepository.java b/src/main/java/com/bamboo/log/domain/user/oauth/repository/RefreshRepository.java
+deleted file mode 100644
+index 8bbe809..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/repository/RefreshRepository.java
++++ /dev/null
+@@ -1,10 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.repository;
+-
+-import com.bamboo.log.domain.user.oauth.entity.RefreshToken;
+-import org.springframework.data.jpa.repository.JpaRepository;
+-
+-public interface RefreshRepository extends JpaRepository<RefreshToken, Long> {
+-    Boolean existsByToken(String token);
+-    void deleteByToken(String token);
+-    RefreshToken findByToken(String token);
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/repository/UserRepository.java b/src/main/java/com/bamboo/log/domain/user/oauth/repository/UserRepository.java
+deleted file mode 100644
+index 645a385..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/repository/UserRepository.java
++++ /dev/null
+@@ -1,8 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.repository;
+-
+-import com.bamboo.log.domain.user.oauth.entity.UserEntity;
+-import org.springframework.data.jpa.repository.JpaRepository;
+-
+-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+-    UserEntity findByUsername(String username);
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomFailureHandler.java b/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomFailureHandler.java
+deleted file mode 100644
+index 1dac05d..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomFailureHandler.java
++++ /dev/null
+@@ -1,20 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.service;
+-
+-import jakarta.servlet.ServletException;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import org.springframework.security.core.AuthenticationException;
+-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+-import org.springframework.stereotype.Component;
+-
+-import java.io.IOException;
+-
+-@Component
+-public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+-
+-    @Override
+-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+-        response.sendRedirect("http://localhost:3000");
+-    }
+-}
+-
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomOAuth2UserService.java b/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomOAuth2UserService.java
+deleted file mode 100644
+index 8de41c2..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomOAuth2UserService.java
++++ /dev/null
+@@ -1,67 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.service;
+-
+-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+-import com.bamboo.log.domain.user.oauth.dto.KakaoResponse;
+-import com.bamboo.log.domain.user.oauth.dto.OAuth2Response;
+-import com.bamboo.log.domain.user.oauth.dto.UserDTO;
+-import com.bamboo.log.domain.user.oauth.entity.UserEntity;
+-import com.bamboo.log.domain.user.oauth.repository.UserRepository;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+-import org.springframework.security.oauth2.core.user.OAuth2User;
+-import org.springframework.stereotype.Service;
+-
+-
+-@Service
+-@RequiredArgsConstructor
+-public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+-
+-    private final UserRepository userRepository;
+-
+-    @Override
+-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+-        OAuth2User oAuth2User = super.loadUser(userRequest);
+-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+-
+-        OAuth2Response oAuth2Response = null;
+-        if (registrationId.equals("kakao")) {
+-            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+-        } else {
+-            return null;
+-        }
+-
+-        System.out.println("OAuth2Response: " + oAuth2Response);
+-        String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
+-        UserEntity existData = userRepository.findByUsername(username);
+-        System.out.println("username = " + username);
+-        System.out.println("Existing User: " + existData);
+-
+-        if (existData == null) {
+-            UserEntity userEntity = UserEntity.builder()
+-                    .username(username)
+-                    .name(oAuth2Response.getName())
+-                    .email(oAuth2Response.getEmail())
+-                    .role("ROLE_USER")
+-                    .build();
+-
+-            userRepository.save(userEntity);
+-
+-            UserDTO userDTO = UserDTO.builder()
+-                    .username(username)
+-                    .name(oAuth2Response.getName())
+-                    .role("ROLE_USER")
+-                    .build();
+-
+-            return new CustomOAuth2User(userDTO);
+-        } else {
+-            UserDTO userDTO = UserDTO.builder()
+-                    .username(existData.getUsername())
+-                    .name(existData.getName())
+-                    .role(existData.getRole())
+-                    .build();
+-            return new CustomOAuth2User(userDTO);
+-        }
+-    }
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomSuccessHandler.java b/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomSuccessHandler.java
+deleted file mode 100644
+index 069d271..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/oauth/service/CustomSuccessHandler.java
++++ /dev/null
+@@ -1,78 +0,0 @@
+-package com.bamboo.log.domain.user.oauth.service;
+-
+-import com.bamboo.log.domain.user.jwt.service.JWTUtil;
+-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+-import com.bamboo.log.domain.user.oauth.entity.RefreshToken;
+-import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
+-import jakarta.servlet.ServletException;
+-import jakarta.servlet.http.Cookie;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.security.core.Authentication;
+-import org.springframework.security.core.GrantedAuthority;
+-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+-import org.springframework.stereotype.Component;
+-
+-import java.io.IOException;
+-import java.util.Collection;
+-import java.util.Date;
+-import java.util.Iterator;
+-
+-@Component
+-@RequiredArgsConstructor
+-public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+-
+-    private final JWTUtil jwtUtil;
+-    private final RefreshRepository refreshRepository;
+-
+-
+-    @Override
+-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+-        CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
+-        String name=customUserDetails.getName();
+-        String username = customUserDetails.getUsername();
+-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+-        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+-        GrantedAuthority auth = iterator.next();
+-        String role = auth.getAuthority();
+-
+-        String refreshToken = jwtUtil.createJwt("refresh",name,username, role, 1800000L);
+-        String accessToken = jwtUtil.createJwt("access",name,username, role, 1209600000L);
+-        addRefreshEntity(name, username, refreshToken, 1209600000L);
+-        response.addCookie(createCookie("refresh", refreshToken));
+-        response.addCookie(UnScretCreateCookie("access", accessToken));
+-        response.sendRedirect("http://localhost:3000/");
+-    }
+-
+-    private Cookie createCookie(String key, String value) {
+-
+-        Cookie cookie = new Cookie(key, value);
+-        cookie.setMaxAge(24 * 60 * 60 * 14);
+-        cookie.setPath("/");
+-        cookie.setHttpOnly(true);
+-
+-        return cookie;
+-    }
+-    private Cookie UnScretCreateCookie(String key, String value) {
+-
+-        Cookie cookie = new Cookie(key, value);
+-        cookie.setMaxAge(60*60);
+-        cookie.setPath("/");
+-        return cookie;
+-    }
+-    private void addRefreshEntity(String name, String username, String refresh, Long expiredMs) {
+-        Date CrDate = new Date(System.currentTimeMillis());
+-        Date ExDate = new Date(System.currentTimeMillis() + expiredMs);
+-        refreshRepository.save(
+-                RefreshToken.builder()
+-                        .name(name)
+-                        .username(username)
+-                        .token(refresh)
+-                        .createdAt(CrDate)
+-                        .expiresAt(ExDate)
+-                        .build()
+-        );
+-    }
+-}
+-
+diff --git a/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissue.java b/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissue.java
+deleted file mode 100644
+index 73dcdd3..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissue.java
++++ /dev/null
+@@ -1,9 +0,0 @@
+-package com.bamboo.log.domain.user.refresh.service;
+-
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import org.springframework.http.ResponseEntity;
+-
+-public interface ProcessTokenReissue {
+-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response);
+-}
+diff --git a/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissueImpl.java b/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissueImpl.java
+deleted file mode 100644
+index e808c3f..0000000
+--- a/src/main/java/com/bamboo/log/domain/user/refresh/service/ProcessTokenReissueImpl.java
++++ /dev/null
+@@ -1,103 +0,0 @@
+-package com.bamboo.log.domain.user.refresh.service;
+-
+-import com.bamboo.log.domain.user.jwt.service.JWTUtil;
+-import com.bamboo.log.domain.user.oauth.entity.RefreshToken;
+-import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
+-import io.jsonwebtoken.ExpiredJwtException;
+-import jakarta.servlet.http.Cookie;
+-import jakarta.servlet.http.HttpServletRequest;
+-import jakarta.servlet.http.HttpServletResponse;
+-import lombok.RequiredArgsConstructor;
+-import lombok.extern.slf4j.Slf4j;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.stereotype.Service;
+-import org.springframework.transaction.annotation.Transactional;
+-
+-import java.util.Date;
+-
+-@Service
+-@RequiredArgsConstructor
+-@Transactional
+-@Slf4j
+-public class ProcessTokenReissueImpl implements ProcessTokenReissue {
+-
+-    private final JWTUtil jwtUtil;
+-    private final RefreshRepository refreshRepository;
+-
+-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+-
+-        String refresh = null;
+-        Cookie[] cookies = request.getCookies();
+-        for (Cookie cookie : cookies) {
+-            if (cookie.getName().equals("refresh")) {
+-                refresh = cookie.getValue();
+-            }
+-        }
+-
+-        if (refresh == null) {
+-            log.error("리프레시 토큰이 없습니다.");
+-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+-        }
+-
+-        try {
+-            jwtUtil.isExpired(refresh);
+-        } catch (ExpiredJwtException e) {
+-            log.error("리프레시 토큰이 만료되었습니다. token: {}", refresh);
+-            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
+-        }
+-
+-        String category = jwtUtil.getCategory(refresh);
+-        if (!category.equals("refresh")) {
+-            log.error("유효하지 않은 리프레시 토큰입니다. token: {}", refresh);
+-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+-        }
+-
+-        if (!refreshRepository.existsByToken(refresh)) {
+-            log.error("리프레시 토큰이 존재하지 않습니다. token: {}", refresh);
+-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+-        }
+-
+-        String name = jwtUtil.getName(refresh);
+-        String username = jwtUtil.getUsername(refresh);
+-        String role = jwtUtil.getRole(refresh);
+-
+-        String newAccess = jwtUtil.createJwt("access", name, username , role, 1800000L);
+-        String newRefresh = jwtUtil.createJwt("refresh", name, username, role, 1209600000L);
+-
+-        refreshRepository.deleteByToken(refresh);
+-        addRefreshEntity(name,username,role,1209600000L);
+-
+-        log.info("새로운 액세스 토큰과 리프레시 토큰을 발급했습니다. 새로운 리프레시 토큰: {}", newRefresh);
+-
+-        response.setHeader("Authorization", newAccess);
+-        response.addCookie(createCookie("refresh", newRefresh));
+-
+-        log.info("리프레시 토큰 재발급 완료");
+-
+-        return new ResponseEntity<>(HttpStatus.OK);
+-    }
+-
+-    private Cookie createCookie(String key, String value) {
+-        log.info("쿠키 생성 시작");
+-        Cookie cookie = new Cookie(key, value);
+-        cookie.setMaxAge(24 * 60 * 60 * 14);  // 14일 유효
+-        cookie.setHttpOnly(true); // 클라이언트 측에서 접근 불가
+-        log.info("쿠키 생성 끝");
+-        return cookie;
+-    }
+-    private void addRefreshEntity(String name, String username, String refresh, Long expiredMs) {
+-        Date CrDate = new Date(System.currentTimeMillis());
+-        Date ExDate = new Date(System.currentTimeMillis() + expiredMs);
+-        refreshRepository.save(
+-                RefreshToken.builder()
+-                        .name(name)
+-                        .username(username)
+-                        .token(refresh)
+-                        .createdAt(CrDate)
+-                        .expiresAt(ExDate)
+-                        .build()
+-        );
+-    }
+-}
+-
+diff --git a/src/main/java/com/bamboo/log/elice/config/RestTemplateConfig.java b/src/main/java/com/bamboo/log/elice/config/RestTemplateConfig.java
+new file mode 100644
+index 0000000..0ea3f07
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/elice/config/RestTemplateConfig.java
+@@ -0,0 +1,14 @@
++package com.bamboo.log.elice.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.web.client.RestTemplate;
++
++@Configuration
++public class RestTemplateConfig {
++
++    @Bean
++    public RestTemplate restTemplate() {
++        return new RestTemplate();
++    }
++}
+diff --git a/src/main/java/com/bamboo/log/elice/service/ImageGenerationService.java b/src/main/java/com/bamboo/log/elice/service/ImageGenerationService.java
+new file mode 100644
+index 0000000..d7aa11b
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/elice/service/ImageGenerationService.java
+@@ -0,0 +1,58 @@
++package com.bamboo.log.elice.service;
++
++import org.springframework.beans.factory.annotation.Value;
++import org.springframework.http.*;
++import org.springframework.stereotype.Service;
++import org.springframework.web.client.RestTemplate;
++
++import okhttp3.*;
++import okhttp3.MediaType;
++
++import java.io.IOException;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++@Service
++public class ImageGenerationService {
++
++    private final RestTemplate restTemplate;
++    private final String apiKey;
++    private final String apiUrl;
++
++    public ImageGenerationService(RestTemplate restTemplate,
++                                  @Value("${elice.api.token}") String apiKey,
++                                  @Value("${elice.api.url}") String apiUrl) {
++        this.restTemplate = restTemplate;
++        this.apiKey = apiKey;
++        this.apiUrl = apiUrl;
++    }
++
++    public byte[] generateImage(String prompt) throws IOException {
++        OkHttpClient client = new OkHttpClient();
++
++        String requestBody = String.format("{\"prompt\":\"%s\",\"style\":\"polaroid\"}", prompt);
++
++        MediaType mediaType = MediaType.parse("application/json");
++        RequestBody body = RequestBody.create(requestBody, mediaType);
++
++        Request request = new Request.Builder()
++                .url(apiUrl)
++                .post(body)
++                .addHeader("accept", "application/json")
++                .addHeader("content-type", "application/json")
++                .addHeader("Authorization", "Bearer " + apiKey)
++                .build();
++
++        Response response = client.newCall(request).execute();
++
++        if (!response.isSuccessful()) {
++            throw new IOException("요청 실패: " + response.code());
++        }
++
++        byte[] imageBytes = response.body().bytes();  // ✅ 이미지 데이터를 byte[]로 변환
++        response.close();
++        return imageBytes;
++    }
++}
++
+diff --git a/src/main/java/com/bamboo/log/emotion/controller/FaceDetectController.java b/src/main/java/com/bamboo/log/emotion/controller/FaceDetectController.java
+deleted file mode 100644
+index fee5189..0000000
+--- a/src/main/java/com/bamboo/log/emotion/controller/FaceDetectController.java
++++ /dev/null
+@@ -1,32 +0,0 @@
+-package com.bamboo.log.emotion.controller;
+-
+-import com.bamboo.log.emotion.dto.FaceDetectionResponse;
+-import com.bamboo.log.emotion.service.FaceDetectionService;
+-import io.swagger.v3.oas.annotations.Operation;
+-import io.swagger.v3.oas.annotations.tags.Tag;
+-import lombok.RequiredArgsConstructor;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RequestMapping;
+-import org.springframework.web.bind.annotation.RequestParam;
+-import org.springframework.web.bind.annotation.RestController;
+-import org.springframework.web.multipart.MultipartFile;
+-
+-@RestController
+-@RequiredArgsConstructor
+-@RequestMapping("/api/emotion")
+-@Tag(name = "Face Detection", description = "얼굴 인식 관련 API")
+-public class FaceDetectController {
+-    private final FaceDetectionService faceDetectionService;
+-
+-    @PostMapping("/detect")
+-    @Operation(
+-            summary = "얼굴 인식 API",
+-            description = "이미지를 업로드하면 얼굴 인식 여부를 반환합니다."
+-    )
+-    public ResponseEntity<FaceDetectionResponse> detectFace(@RequestParam("image") MultipartFile image) {
+-        FaceDetectionResponse response = faceDetectionService.detectFace(image);
+-        return ResponseEntity.status(HttpStatus.valueOf(response.statusCode())).body(response);
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/emotion/dto/FaceDetectionResponse.java b/src/main/java/com/bamboo/log/emotion/dto/FaceDetectionResponse.java
+deleted file mode 100644
+index f9a2b09..0000000
+--- a/src/main/java/com/bamboo/log/emotion/dto/FaceDetectionResponse.java
++++ /dev/null
+@@ -1,13 +0,0 @@
+-package com.bamboo.log.emotion.dto;
+-
+-import org.springframework.http.HttpStatus;
+-
+-public record FaceDetectionResponse(
+-        int statusCode,
+-        String statusMessage,
+-        String message
+-) {
+-    public FaceDetectionResponse(HttpStatus httpStatus, String message) {
+-        this(httpStatus.value(), httpStatus.name(), message);
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/emotion/service/FaceDetectionService.java b/src/main/java/com/bamboo/log/emotion/service/FaceDetectionService.java
+deleted file mode 100644
+index af5f1bc..0000000
+--- a/src/main/java/com/bamboo/log/emotion/service/FaceDetectionService.java
++++ /dev/null
+@@ -1,8 +0,0 @@
+-package com.bamboo.log.emotion.service;
+-
+-import com.bamboo.log.emotion.dto.FaceDetectionResponse;
+-import org.springframework.web.multipart.MultipartFile;
+-
+-public interface FaceDetectionService {
+-    FaceDetectionResponse detectFace(MultipartFile image);
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/emotion/service/impl/FaceDetectionServiceImpl.java b/src/main/java/com/bamboo/log/emotion/service/impl/FaceDetectionServiceImpl.java
+deleted file mode 100644
+index 47e6d8a..0000000
+--- a/src/main/java/com/bamboo/log/emotion/service/impl/FaceDetectionServiceImpl.java
++++ /dev/null
+@@ -1,90 +0,0 @@
+-package com.bamboo.log.emotion.service.impl;
+-
+-import com.bamboo.log.emotion.dto.FaceDetectionResponse;
+-import com.bamboo.log.emotion.service.FaceDetectionService;
+-import com.fasterxml.jackson.databind.JsonNode;
+-import com.fasterxml.jackson.databind.ObjectMapper;
+-import lombok.RequiredArgsConstructor;
+-import lombok.extern.slf4j.Slf4j;
+-import okhttp3.*;
+-import org.springframework.beans.factory.annotation.Value;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.stereotype.Service;
+-import org.springframework.web.multipart.MultipartFile;
+-
+-import java.io.IOException;
+-
+-@Slf4j
+-@Service
+-@RequiredArgsConstructor
+-public class FaceDetectionServiceImpl implements FaceDetectionService {
+-
+-    @Value("${elice.api.url.face}")
+-    private String faceApiUrl;
+-
+-    @Value("${elice.api.token}")
+-    private String faceToken;
+-
+-    private final OkHttpClient client = new OkHttpClient();
+-
+-    @Override
+-    public FaceDetectionResponse detectFace(MultipartFile image) {
+-        if (image == null || image.isEmpty()) {
+-            log.error("파일이 전달되지 않음.");
+-            return new FaceDetectionResponse(HttpStatus.BAD_REQUEST, "파일이 전달되지 않았습니다.");
+-        }
+-        log.info("파일 이름: {}", image.getOriginalFilename());
+-        log.info("파일 크기: {} bytes", image.getSize());
+-
+-        try {
+-            String contentType = image.getContentType();
+-            if (contentType == null) {
+-                contentType = "application/octet-stream"; // 기본값 설정
+-            }
+-
+-            RequestBody requestBody = new MultipartBody.Builder()
+-                    .setType(MultipartBody.FORM)
+-                    .addFormDataPart("image", image.getOriginalFilename(),
+-                            RequestBody.create(image.getBytes(), MediaType.parse(contentType)))
+-                    .build();
+-
+-            // API 요청 생성 (토큰 포함)
+-            Request request = new Request.Builder()
+-                    .url(faceApiUrl)
+-                    .post(requestBody)
+-                    .addHeader("accept", "application/json")
+-                    .addHeader("Authorization", "Bearer " + faceToken)
+-                    .build();
+-
+-            try (Response response = client.newCall(request).execute()) {
+-                log.info("API 응답 코드: {}", response.code());
+-                log.info("API 응답 메시지: {}", response.message());
+-
+-                if (!response.isSuccessful()) {
+-                    return new FaceDetectionResponse(HttpStatus.valueOf(response.code()), "API 요청 실패: " + response.message());
+-                }
+-
+-                String responseBody = response.body().string();
+-                log.info("API 응답 본문: {}", responseBody);
+-
+-                // JSON 파싱
+-                JsonNode jsonNode = new ObjectMapper().readTree(responseBody);
+-                JsonNode results = jsonNode.get("results");
+-
+-                // 얼굴 인식 여부 확인
+-                if (results != null && results.isArray() && results.size() > 0) {
+-                    for (JsonNode result : results) {
+-                        if ("face".equals(result.get("name").asText())) {
+-                            return new FaceDetectionResponse(HttpStatus.OK, responseBody);
+-                        }
+-                    }
+-                }
+-                return new FaceDetectionResponse(HttpStatus.NOT_FOUND, "얼굴이 인식되지 않았습니다.");
+-            }
+-        } catch (IOException e) {
+-            log.error("API 요청 중 예외 발생", e);
+-            return new FaceDetectionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "API 요청 중 오류 발생: " + e.getMessage());
+-        }
+-    }
+-
+-}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/utils/ResponseHandler.java b/src/main/java/com/bamboo/log/utils/ResponseHandler.java
+new file mode 100644
+index 0000000..c483a50
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/utils/ResponseHandler.java
+@@ -0,0 +1,51 @@
++package com.bamboo.log.utils;
++
++import com.bamboo.log.utils.dto.DetailResponse;
++import com.bamboo.log.utils.dto.ResponseForm;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++
++public class ResponseHandler {
++
++    public static ResponseEntity create500Error(ResponseForm response, Exception e) {
++        response.of("result", "FAIL");
++        response.of("error", DetailResponse.builder().code(500).message(e.getMessage()).build());
++        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
++    }
++
++    public static ResponseEntity create400Error(ResponseForm response, Exception e) {
++        response.of("result", "FAIL");
++        response.of("error", DetailResponse.builder().code(400).message(e.getMessage()).build());
++
++        return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
++    }
++
++    public static ResponseEntity create404Error(ResponseForm response, Exception e) {
++        response.of("result", "FAIL");
++        response.of("error", DetailResponse.builder().code(404).message(e.getMessage()).build());
++
++        return new ResponseEntity(response, HttpStatus.NOT_FOUND);
++    }
++
++    public static ResponseEntity create204Response(ResponseForm response, String message) {
++        response.of("result", "SUCCESS");
++        response.of("code", DetailResponse.builder().code(204).message(message).build());
++
++        return new ResponseEntity(response, HttpStatus.NO_CONTENT);
++    }
++
++    public static ResponseEntity create200Response(ResponseForm response, Object object) {
++        response.of("result", "SUCCESS");
++        response.of("code", object);
++
++        return new ResponseEntity(response, HttpStatus.OK);
++    }
++
++    public static ResponseEntity create201Response(ResponseForm response, Object object) {
++        response.of("result", "SUCCESS");
++        response.of("code", object);
++
++        return new ResponseEntity(response, HttpStatus.CREATED);
++    }
++
++}
+diff --git a/src/main/java/com/bamboo/log/utils/SecurityConfig.java b/src/main/java/com/bamboo/log/utils/SecurityConfig.java
+new file mode 100644
+index 0000000..5d51eb4
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/utils/SecurityConfig.java
+@@ -0,0 +1,23 @@
++package com.bamboo.log.utils;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
++import org.springframework.security.web.SecurityFilterChain;
++
++@Configuration
++@EnableWebSecurity
++public class SecurityConfig {
++    @Bean
++    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
++        http
++                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
++                .authorizeHttpRequests(auth -> auth
++                        .requestMatchers("/api/images/**").permitAll() // 이미지 API 인증 없이 허용
++                        .anyRequest().authenticated()
++                );
++
++        return http.build();
++    }
++}
+diff --git a/src/main/java/com/bamboo/log/utils/dto/DetailResponse.java b/src/main/java/com/bamboo/log/utils/dto/DetailResponse.java
+new file mode 100644
+index 0000000..61f22cf
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/utils/dto/DetailResponse.java
+@@ -0,0 +1,13 @@
++package com.bamboo.log.utils.dto;
++
++import lombok.Builder;
++import lombok.Getter;
++
++@Builder
++@Getter
++public class DetailResponse {
++
++    private Integer code;
++    private String message;
++
++}
+\ No newline at end of file
+diff --git a/src/main/java/com/bamboo/log/utils/dto/ResponseForm.java b/src/main/java/com/bamboo/log/utils/dto/ResponseForm.java
+new file mode 100644
+index 0000000..04eccf6
+--- /dev/null
++++ b/src/main/java/com/bamboo/log/utils/dto/ResponseForm.java
+@@ -0,0 +1,21 @@
++package com.bamboo.log.utils.dto;
++
++import lombok.Getter;
++
++import java.util.HashMap;
++import java.util.Map;
++
++@Getter
++public class ResponseForm {
++
++    public ResponseForm() {
++        response = new HashMap<>();
++    }
++
++    public void of(String value1, Object value2) {
++        response.put(value1, value2);
++    }
++
++    private Map<String, Object> response;
++
++}
+\ No newline at end of file
+diff --git a/src/main/resources/application.yml b/src/main/resources/application.yml
+index 5379dd6..317cea6 100644
+--- a/src/main/resources/application.yml
++++ b/src/main/resources/application.yml
+@@ -1,42 +1,23 @@
+ spring:
+   datasource:
++    driver-class-name: com.mysql.cj.jdbc.Driver
+     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
+     username: ${MYSQL_USERNAME}
+     password: ${MYSQL_PASSWORD}
+-    driver-class-name: com.mysql.cj.jdbc.Driver
++
+   jpa:
+     show-sql: true
+     open-in-view: false
+     hibernate:
+-      ddl-auto: update
++     ddl-auto: update
+     properties:
+       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+ 
+-  security:
+-    oauth2:
+-      client:
+-        registration:
+-          kakao:
+-            client-authentication-method: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_AUTHENTICATION_METHOD}
+-            client-name: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME}
+-            client-id: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
+-            client-secret: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
+-            redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
+-            authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
+-            scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
+-        provider:
+-          kakao:
+-            authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
+-            token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
+-            user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
+-            user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+-  jwt:
+-    secret: ${JWT_SECRET}
+ 
+ elice:
+   api:
+     token: ${API_TOKEN}
+     url:
+-      face: ${FACE_URL}
+-      img:
+-      chat:
+\ No newline at end of file
++      face: ${FACE_API_URL}
++      img: ${IMG_API_URL}
++      chat: ${CHAT_API_URL}
