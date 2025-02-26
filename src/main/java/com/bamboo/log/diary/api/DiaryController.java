@@ -34,10 +34,6 @@ public class DiaryController {
     @Operation(summary = "날짜별 일기 조회")
     @GetMapping("/date")
     public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
-        try {
-            return diaryService.getDiaryByDate(date);
-        } catch (Exception e) {
-            return ResponseHandler.create500Error(new ResponseForm(), e);
-        }
+        return diaryService.getDiaryByDate(date);
     }
 }

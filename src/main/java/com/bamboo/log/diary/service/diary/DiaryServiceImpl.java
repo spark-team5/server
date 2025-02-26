@@ -75,8 +75,11 @@ public class DiaryServiceImpl implements DiaryService {
                             .diaryDescription(diaryByDate.getContext())
                             .summaryImage(summaryImage.get().getImageData()));
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseHandler.create404Error(new ResponseForm(), new IllegalArgumentException("해당 날짜에 작성된 일기가 없습니다."));
+        }
+        catch (Exception e) {
+            return ResponseHandler.create500Error(new ResponseForm(), e);
         }
     }
 
