@@ -35,7 +35,7 @@ public class DiaryController {
     @GetMapping("/month")
     public ResponseEntity getDiariesByMonth(@RequestParam String date) {
         try {
-
+            return diaryService.getDiariesByMonth(date);
         } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
