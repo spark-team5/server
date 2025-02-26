@@ -4,6 +4,7 @@ import com.bamboo.log.diary.domain.Diary;
 import com.bamboo.log.diary.domain.TodaySummary;
 import com.bamboo.log.diary.dto.ParseYearMonth;
 import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
+import com.bamboo.log.diary.dto.response.CheckDiaryResponse;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
 import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse;
 import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse.DiaryOfMonth;
