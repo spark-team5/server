@@ -70,7 +70,7 @@ public class DiaryServiceImpl implements DiaryService {
 
         try {
             List<Diary> diaries =
-                    diaryRepository.findByUserAndCreatedAtBetween(user,
+                    diaryRepository.findByUserAAndCreatedAtBetween(user,
                             parseYearMonth.getStartOfMonth(), parseYearMonth.getEndOfMonth());
 
             List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
