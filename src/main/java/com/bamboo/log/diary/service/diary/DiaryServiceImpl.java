@@ -53,8 +53,13 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Override
-    public ResponseEntity getDiaryByDate(String date) {
-        return null;
+    public ResponseEntity getDiaryByDate(LocalDateTime date) {
+        // 해당 유저가 입력받은 날짜에 일기를 작성했는지 확인
+
+        // 확인 후 얻어낸 일기 정보를 Response에 담아 반환
+
+
+        return ResponseHandler.create200Response(new ResponseForm(), new CreateDiaryResponse[]);
     }
 
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {

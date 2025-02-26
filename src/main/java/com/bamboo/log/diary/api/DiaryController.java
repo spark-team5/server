@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class DiaryController {
 
     @Operation(summary = "날짜별 일기 조회")
     @GetMapping("/diariy")
-    public ResponseEntity getDiaryByDate(@RequestParam String date) {
+    public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
         try {
             return diaryService.getDiaryByDate(date);
         } catch (Exception e) {
