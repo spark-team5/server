@@ -53,6 +53,8 @@ public class DiaryServiceImpl implements DiaryService {
         // todaySummaryImage 데이터베이스에 저장
         try {
             todaySummaryService.saveTodaySummaryImage(todayImage, diary.getId());
+        } catch (RuntimeException e) {
+            return ResponseHandler.create404Error(new ResponseForm(), e);
         } catch (IOException e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
@@ -86,11 +88,13 @@ public class DiaryServiceImpl implements DiaryService {
 
             return ResponseHandler.create200Response(new ResponseForm(),
                     GetDiariesOfMonthResponse.builder()
-                    .diariesCount(diaryOfMonthList.size())
-                    .date(date)
-                    .diaries(diaryOfMonthList)
-                    .build());
+                            .diariesCount(diaryOfMonthList.size())
+                            .date(date)
+                            .diaries(diaryOfMonthList)
+                            .build());
         } catch (RuntimeException e) {
+            return ResponseHandler.create404Error(new ResponseForm(), e);
+        } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
     }

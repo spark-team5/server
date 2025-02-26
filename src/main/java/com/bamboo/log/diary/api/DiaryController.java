@@ -24,20 +24,12 @@ public class DiaryController {
     @Operation(summary = "랜덤 주제 조회")
     @PostMapping("/create")
     public ResponseEntity lookupRandomTopics(@RequestBody CreateDiaryRequest createDiaryRequest) {
-        try {
-            return diaryService.createDiary(createDiaryRequest);
-        } catch (Exception e) {
-            return ResponseHandler.create500Error(new ResponseForm(), e);
-        }
+        return diaryService.createDiary(createDiaryRequest);
     }
 
     @Operation(summary = "월별 일기 조회")
     @GetMapping("/month")
     public ResponseEntity getDiariesByMonth(@RequestParam String date) {
-        try {
-            return diaryService.getDiariesByMonth(date);
-        } catch (Exception e) {
-            return ResponseHandler.create500Error(new ResponseForm(), e);
-        }
+        return diaryService.getDiariesByMonth(date);
     }
 }
