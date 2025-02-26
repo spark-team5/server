@@ -7,4 +7,6 @@ public interface DiaryService {
 
     ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest);
 
+    ResponseEntity getDiariesByMonth(String date);
+
 }
