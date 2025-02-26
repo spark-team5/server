@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,13 +21,19 @@ public class DiaryController {
 
     private final DiaryService diaryService;
 
-    @Operation(summary = "랜덤 주제 조회")
+    @Operation(summary = "일기 생성")
     @PostMapping("/create")
-    public ResponseEntity lookupRandomTopics(@RequestBody CreateDiaryRequest createDiaryRequest) {
+    public ResponseEntity createDiary(@RequestBody CreateDiaryRequest createDiaryRequest) {
         try {
             return diaryService.createDiary(createDiaryRequest);
         } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
+    }
+
+    @Operation(summary = "날짜별 일기 조회")
+    @GetMapping("/date")
+    public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
+        return diaryService.getDiaryByDate(date);
     }
 }

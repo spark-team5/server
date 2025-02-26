@@ -1,10 +1,14 @@
 package com.bamboo.log.diary.service.diary;
 
 import com.bamboo.log.diary.domain.Diary;
+import com.bamboo.log.diary.domain.TodaySummary;
 import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
+import com.bamboo.log.diary.dto.response.CheckDiaryResponse;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
 import com.bamboo.log.diary.repository.DiaryRepository;
+import com.bamboo.log.diary.repository.TodaySummaryRepository;
 import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+import com.bamboo.log.domain.user.oauth.repository.UserRepository;
 import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -21,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -28,8 +34,10 @@ import java.time.LocalDateTime;
 public class DiaryServiceImpl implements DiaryService {
 
     private final UserContextUtil userContextUtil;
+    private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final TodaySummaryService todaySummaryService;
+    private final TodaySummaryRepository todaySummaryRepository;
 
     @Override
     public ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest) {
@@ -50,6 +58,29 @@ public class DiaryServiceImpl implements DiaryService {
 
         // 201 code 반환
         return ResponseHandler.create201Response(new ResponseForm(), new CreateDiaryResponse(localDateTime));
+    }
+
+    @Override
+    public ResponseEntity getDiaryByDate(LocalDateTime date) {
+        UserEntity user = userRepository.findByUsername(userContextUtil.getUsername());
+
+        try {
+            List<Diary> diaries = diaryRepository.findByUserAAndCreatedAtBetween(user, date, date);
+            Diary diaryByDate = diaries.get(0);
+            Optional<TodaySummary> summaryImage = todaySummaryRepository.findByDiaryId(diaryByDate.getId());
+
+            return ResponseHandler.create200Response(new ResponseForm(),
+                    CheckDiaryResponse.builder()
+                            .date(diaryByDate.getCreatedAt())
+                            .diaryDescription(diaryByDate.getContext())
+                            .summaryImage(summaryImage.get().getImageData()));
+
+        } catch (RuntimeException e) {
+            return ResponseHandler.create404Error(new ResponseForm(), new IllegalArgumentException("해당 날짜에 작성된 일기가 없습니다."));
+        }
+        catch (Exception e) {
+            return ResponseHandler.create500Error(new ResponseForm(), e);
+        }
     }
 
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
