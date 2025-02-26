@@ -15,14 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/emotion")
-@Tag(name = "Face Detection", description = "얼굴 인식 관련 API")
+@RequestMapping("/api/face")
+@Tag(name = "Face Detection", description = "얼굴 인식 API")
 public class FaceDetectController {
     private final FaceDetectionService faceDetectionService;
 
     @PostMapping("/detect")
     @Operation(
-            summary = "얼굴 인식 API",
+            summary = "얼굴 인식",
             description = "이미지를 업로드하면 얼굴 인식 여부를 반환합니다."
     )
     public ResponseEntity<FaceDetectionResponse> detectFace(@RequestParam("image") MultipartFile image) {
