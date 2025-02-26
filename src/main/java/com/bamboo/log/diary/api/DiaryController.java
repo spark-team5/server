@@ -31,6 +31,12 @@ public class DiaryController {
         }
     }
 
+    @Operation(summary = "월별 일기 조회")
+    @GetMapping("/month")
+    public ResponseEntity getDiariesByMonth(@RequestParam String date) {
+        return diaryService.getDiariesByMonth(date);
+    }
+
     @Operation(summary = "날짜별 일기 조회")
     @GetMapping("/date")
     public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
