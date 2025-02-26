@@ -52,6 +52,11 @@ public class DiaryServiceImpl implements DiaryService {
         return ResponseHandler.create201Response(new ResponseForm(), new CreateDiaryResponse(localDateTime));
     }
 
+    @Override
+    public ResponseEntity getDiaryByDate(String date) {
+        return null;
+    }
+
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
         UserEntity user = userContextUtil.getUserEntity();
 

@@ -35,7 +35,7 @@ public class DiaryController {
     @GetMapping("/diariy")
     public ResponseEntity getDiaryByDate(@RequestParam String date) {
         try {
-
+            return diaryService.getDiaryByDate(date);
         } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
