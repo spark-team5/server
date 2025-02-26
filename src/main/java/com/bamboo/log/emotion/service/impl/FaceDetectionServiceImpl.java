@@ -1,5 +1,6 @@
 package com.bamboo.log.emotion.service.impl;
 
+import com.bamboo.log.emotion.dto.BoundingBox;
 import com.bamboo.log.emotion.dto.FaceDetectionResponse;
 import com.bamboo.log.emotion.service.FaceDetectionService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -31,7 +34,7 @@ public class FaceDetectionServiceImpl implements FaceDetectionService {
     public FaceDetectionResponse detectFace(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             log.error("파일이 전달되지 않음.");
-            return new FaceDetectionResponse(HttpStatus.BAD_REQUEST, "파일이 전달되지 않았습니다.");
+            return new FaceDetectionResponse(HttpStatus.BAD_REQUEST, List.of());
         }
         log.info("파일 이름: {}", image.getOriginalFilename());
         log.info("파일 크기: {} bytes", image.getSize());
@@ -61,7 +64,7 @@ public class FaceDetectionServiceImpl implements FaceDetectionService {
                 log.info("API 응답 메시지: {}", response.message());
 
                 if (!response.isSuccessful()) {
-                    return new FaceDetectionResponse(HttpStatus.valueOf(response.code()), "API 요청 실패: " + response.message());
+                    return new FaceDetectionResponse(HttpStatus.valueOf(response.code()),  List.of());
                 }
 
                 String responseBody = response.body().string();
@@ -72,18 +75,27 @@ public class FaceDetectionServiceImpl implements FaceDetectionService {
                 JsonNode results = jsonNode.get("results");
 
                 // 얼굴 인식 여부 확인
-                if (results != null && results.isArray() && results.size() > 0) {
+                List<BoundingBox> boxList = new ArrayList<>();
+                if (results != null && results.isArray()) {
                     for (JsonNode result : results) {
                         if ("face".equals(result.get("name").asText())) {
-                            return new FaceDetectionResponse(HttpStatus.OK, responseBody);
+                            JsonNode boxNode = result.get("box");
+                            if (boxNode != null) {
+                                boxList.add(new BoundingBox(
+                                        boxNode.get("x1").asDouble(),
+                                        boxNode.get("y1").asDouble(),
+                                        boxNode.get("x2").asDouble(),
+                                        boxNode.get("y2").asDouble()
+                                ));
+                            }
                         }
                     }
                 }
-                return new FaceDetectionResponse(HttpStatus.NOT_FOUND, "얼굴이 인식되지 않았습니다.");
+                return new FaceDetectionResponse(HttpStatus.OK, boxList);
             }
         } catch (IOException e) {
             log.error("API 요청 중 예외 발생", e);
-            return new FaceDetectionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "API 요청 중 오류 발생: " + e.getMessage());
+            return new FaceDetectionResponse(HttpStatus.INTERNAL_SERVER_ERROR, List.of());
         }
     }
 
