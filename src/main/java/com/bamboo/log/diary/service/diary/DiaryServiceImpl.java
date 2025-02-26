@@ -1,6 +1,7 @@
 package com.bamboo.log.diary.service.diary;
 
 import com.bamboo.log.diary.domain.Diary;
+import com.bamboo.log.diary.dto.ParseYearMonth;
 import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
 import com.bamboo.log.diary.repository.DiaryRepository;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Transactional
@@ -67,6 +70,18 @@ public class DiaryServiceImpl implements DiaryService {
                 .build();
 
         return diaryRepository.save(diary);
+    }
+
+    private ParseYearMonth getParsedDate(String date) {
+        YearMonth parsedYearMonth = YearMonth.parse(date, DateTimeFormatter.ofPattern("yyyy-MM"));
+        LocalDateTime startOfMonth = parsedYearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = parsedYearMonth.atEndOfMonth().atTime(23, 59, 59);
+
+        return ParseYearMonth.builder()
+                .parsedYearMonth(parsedYearMonth)
+                .startOfMonth(startOfMonth)
+                .endOfMonth(endOfMonth)
+                .build();
     }
 
 }
