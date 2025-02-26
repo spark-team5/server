@@ -6,6 +6,7 @@ import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
 import com.bamboo.log.diary.repository.DiaryRepository;
 import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+import com.bamboo.log.domain.user.oauth.repository.UserRepository;
 import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @Transactional
@@ -31,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 public class DiaryServiceImpl implements DiaryService {
 
     private final UserContextUtil userContextUtil;
+    private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final TodaySummaryService todaySummaryService;
 
@@ -57,6 +60,13 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Override
     public ResponseEntity getDiariesByMonth(String date) {
+        ParseYearMonth parseYearMonth = getParsedDate(date);
+        UserEntity user = userRepository.findByUsername(userContextUtil.getUsername());
+
+        try {
+            List<Diary> diaries = diaryRepository.
+        }
+
         return null;
     }
 
