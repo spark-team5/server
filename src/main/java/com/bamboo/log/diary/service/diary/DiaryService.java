@@ -12,4 +12,5 @@ public interface DiaryService {
     ResponseEntity getDiariesByMonth(String date);
 
     ResponseEntity getDiaryByDate(LocalDateTime date);
+
 }

@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    List<Diary> findByUserAAndCreatedAtBetween(UserEntity user, LocalDateTime start, LocalDateTime end);
+    List<Diary> findByUserAndCreatedAtBetween(UserEntity user, LocalDateTime start, LocalDateTime end);
 
 }

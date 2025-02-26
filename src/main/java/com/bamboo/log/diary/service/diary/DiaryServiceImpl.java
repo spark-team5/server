@@ -11,15 +11,11 @@ import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse.DiaryOfMonth;
 import com.bamboo.log.diary.repository.DiaryRepository;
 import com.bamboo.log.diary.repository.TodaySummaryRepository;
 
-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
 import com.bamboo.log.domain.user.oauth.repository.UserRepository;
-import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
-import org.springframework.security.core.GrantedAuthority;
 
 import com.bamboo.log.diary.service.summary.TodaySummaryService;
 import com.bamboo.log.domain.user.jwt.service.UserContextUtil;
 import com.bamboo.log.domain.user.oauth.entity.UserEntity;
-import com.bamboo.log.domain.user.oauth.repository.UserRepository;
 import com.bamboo.log.utils.ResponseHandler;
 import com.bamboo.log.utils.dto.ResponseForm;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.List;
-import java.util.Optional;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -71,7 +66,7 @@ public class DiaryServiceImpl implements DiaryService {
         UserEntity user = userRepository.findByUsername(userContextUtil.getUsername());
 
         try {
-            List<Diary> diaries = diaryRepository.findByUserAAndCreatedAtBetween(user,
+            List<Diary> diaries = diaryRepository.findByUserAndCreatedAtBetween(user,
                     parseYearMonth.getStartOfMonth(), parseYearMonth.getEndOfMonth());
 
             List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
@@ -105,7 +100,7 @@ public class DiaryServiceImpl implements DiaryService {
         UserEntity user = userRepository.findByUsername(userContextUtil.getUsername());
 
         try {
-            List<Diary> diaries = diaryRepository.findByUserAAndCreatedAtBetween(user, date, date);
+            List<Diary> diaries = diaryRepository.findByUserAndCreatedAtBetween(user, date, date);
 
             if (diaries.isEmpty()) {
                 throw new RuntimeException("해당 날짜에 작성된 일기가 없습니다.");
@@ -118,7 +113,6 @@ public class DiaryServiceImpl implements DiaryService {
                     CheckDiaryResponse.builder()
                             .date(diaryByDate.getCreatedAt())
                             .diaryDescription(diaryByDate.getContext())
-
                             .summaryImage(summaryImage.map(TodaySummary::getImageData).orElse(null))
                             .build());
 
@@ -152,4 +146,5 @@ public class DiaryServiceImpl implements DiaryService {
                 .endOfMonth(endOfMonth)
                 .build();
     }
+
 }
