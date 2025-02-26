@@ -30,4 +30,14 @@ public class DiaryController {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
     }
+
+    @Operation(summary = "월별 일기 조회")
+    @GetMapping("/month")
+    public ResponseEntity getDiariesByMonth(@RequestParam String date) {
+        try {
+
+        } catch (Exception e) {
+            return ResponseHandler.create500Error(new ResponseForm(), e);
+        }
+    }
 }
