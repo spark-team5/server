@@ -32,7 +32,7 @@ public class DiaryController {
     }
 
     @Operation(summary = "날짜별 일기 조회")
-    @GetMapping("/diariy")
+    @GetMapping("/date")
     public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
         try {
             return diaryService.getDiaryByDate(date);
