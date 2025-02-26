@@ -21,11 +21,21 @@ public class DiaryController {
 
     private final DiaryService diaryService;
 
-    @Operation(summary = "랜덤 주제 조회")
+    @Operation(summary = "일기 생성")
     @PostMapping("/create")
-    public ResponseEntity lookupRandomTopics(@RequestBody CreateDiaryRequest createDiaryRequest) {
+    public ResponseEntity createDiary(@RequestBody CreateDiaryRequest createDiaryRequest) {
         try {
             return diaryService.createDiary(createDiaryRequest);
+        } catch (Exception e) {
+            return ResponseHandler.create500Error(new ResponseForm(), e);
+        }
+    }
+
+    @Operation(summary = "날짜별 일기 조회")
+    @GetMapping("/diariy")
+    public ResponseEntity getDiaryByDate(@RequestParam String date) {
+        try {
+
         } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
