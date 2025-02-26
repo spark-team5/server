@@ -64,7 +64,10 @@ public class DiaryServiceImpl implements DiaryService {
         UserEntity user = userRepository.findByUsername(userContextUtil.getUsername());
 
         try {
-            List<Diary> diaries = diaryRepository.
+            List<Diary> diaries =
+                    diaryRepository.findByUserAndCreatedAtBetween(user,
+                            parseYearMonth.getStartOfMonth(), parseYearMonth.getEndOfMonth());
+
         }
 
         return null;
