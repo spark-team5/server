@@ -40,3 +40,6 @@ elice:
       face: ${FACE_URL}
       img: ${IMG_URL}
       chat: ${CHAT_URL}
+emotion:
+  api:
+    url: ${EMOTION_URL}
