@@ -4,11 +4,11 @@ import com.bamboo.log.diary.domain.Diary;
 import com.bamboo.log.diary.dto.ParseYearMonth;
 import com.bamboo.log.diary.dto.request.CreateDiaryRequest;
 import com.bamboo.log.diary.dto.response.CreateDiaryResponse;
+import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse;
+import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse.DiaryOfMonth;
 import com.bamboo.log.diary.repository.DiaryRepository;
-import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+import com.bamboo.log.diary.repository.TodaySummaryRepository;
 import com.bamboo.log.domain.user.oauth.repository.UserRepository;
-import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
-import org.springframework.security.core.GrantedAuthority;
 
 import com.bamboo.log.diary.service.summary.TodaySummaryService;
 import com.bamboo.log.domain.user.jwt.service.UserContextUtil;
@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -36,6 +38,7 @@ public class DiaryServiceImpl implements DiaryService {
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final TodaySummaryService todaySummaryService;
+    private final TodaySummaryRepository todaySummaryRepository;
 
     @Override
     public ResponseEntity createDiary(CreateDiaryRequest createDiaryRequest) {
@@ -68,9 +71,28 @@ public class DiaryServiceImpl implements DiaryService {
                     diaryRepository.findByUserAndCreatedAtBetween(user,
                             parseYearMonth.getStartOfMonth(), parseYearMonth.getEndOfMonth());
 
-        }
+            List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
+            Map<Long, byte[]> summaryImageMap = todaySummaryRepository.findByDiaryIdIn(diaryIds)
+                    .stream()
+                    .collect(Collectors.toMap(summary -> summary.getDiaryId(), summary -> summary.getImageData()));
 
-        return null;
+            List<DiaryOfMonth> diaryOfMonthList = diaries.stream()
+                    .map(diary -> new DiaryOfMonth(
+                            diary.getCreatedAt(),
+                            diary.getContext(),
+                            summaryImageMap.getOrDefault(diary.getId(), null)
+                    ))
+                    .toList();
+
+            return ResponseHandler.create200Response(new ResponseForm(),
+                    GetDiariesOfMonthResponse.builder()
+                    .diariesCount(diaryOfMonthList.size())
+                    .date(date)
+                    .diaries(diaryOfMonthList)
+                    .build());
+        } catch (RuntimeException e) {
+            return ResponseHandler.create500Error(new ResponseForm(), e);
+        }
     }
 
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
