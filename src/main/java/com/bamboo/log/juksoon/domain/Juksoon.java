@@ -19,7 +19,4 @@ public class Juksoon {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity user;
 
-    public static Juksoon create(UserEntity user) {
-        return Juksoon.builder().user(user).build();
-    }
 }
