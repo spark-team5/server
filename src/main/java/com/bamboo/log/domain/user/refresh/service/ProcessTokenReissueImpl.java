@@ -57,13 +57,13 @@ public class ProcessTokenReissueImpl implements ProcessTokenReissue {
             log.error("리프레시 토큰이 존재하지 않습니다. token: {}", refresh);
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
-
+        Long userId = jwtUtil.getId(refresh);
         String name = jwtUtil.getName(refresh);
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
 
-        String newAccess = jwtUtil.createJwt("access", name, username , role, 1800000L);
-        String newRefresh = jwtUtil.createJwt("refresh", name, username, role, 1209600000L);
+        String newAccess = jwtUtil.createJwt(userId,"access", name, username , role, 1800000L);
+        String newRefresh = jwtUtil.createJwt(userId,"refresh", name, username, role, 1209600000L);
 
         refreshRepository.deleteByToken(refresh);
         addRefreshEntity(name,username,role,1209600000L);

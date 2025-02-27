@@ -1,5 +1,6 @@
 package com.bamboo.log.domain.user.oauth.entity;
 
+import com.bamboo.log.juksoon.domain.Juksoon;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class UserEntity {
     private String email;
     private String role;
     private String profile_img_url;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Juksoon juksooni;
 
     @Builder
     public UserEntity(String username, String name, String email, String role,String profile_img_url) {
