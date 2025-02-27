@@ -5,7 +5,6 @@ import com.bamboo.log.domain.user.oauth.dto.UserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -58,12 +57,13 @@ public class JWTFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-
-
+        Long userId  = jwtUtil.getId(accessToken);
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
         String name=jwtUtil.getName(accessToken);
+
         UserDTO userDTO = UserDTO.builder()
+                .id(userId)
                 .name(name)
                 .username(username)
                 .role(role)

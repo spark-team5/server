@@ -49,6 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(userEntity);
 
             UserDTO userDTO = UserDTO.builder()
+                    .id(userEntity.getId())
                     .username(username)
                     .name(oAuth2Response.getName())
                     .role("ROLE_USER")
@@ -57,6 +58,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return new CustomOAuth2User(userDTO);
         } else {
             UserDTO userDTO = UserDTO.builder()
+                    .id(existData.getId())
                     .username(existData.getUsername())
                     .name(existData.getName())
                     .role(existData.getRole())
