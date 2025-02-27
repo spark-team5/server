@@ -43,7 +43,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addRefreshEntity(name, username, refreshToken, 1209600000L);
         response.addCookie(createCookie("refresh", refreshToken));
         response.addCookie(UnScretCreateCookie("access", accessToken));
-        response.sendRedirect("http://localhost:3000/");
+        response.sendRedirect("http://localhost:3000/welcome");
     }
 
     private Cookie createCookie(String key, String value) {

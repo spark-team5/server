@@ -52,8 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/refresh").permitAll()
                 .requestMatchers("/logout").hasAnyRole("USER")
                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
-                .requestMatchers("/api/images/**").hasAnyRole("USER")
-                .anyRequest().authenticated());
+                .anyRequest().hasAnyRole("USER"));
 
 
         http.sessionManagement((session) -> session
