@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,15 +71,17 @@ public class DiaryServiceImpl implements DiaryService {
                     parseYearMonth.getStartOfMonth(), parseYearMonth.getEndOfMonth());
 
             List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
-            Map<Long, byte[]> summaryImageMap = todaySummaryRepository.findByDiaryIdIn(diaryIds)
+            Map<Long, String> summaryImageMap = todaySummaryRepository.findByDiaryIdIn(diaryIds)
                     .stream()
-                    .collect(Collectors.toMap(TodaySummary::getDiaryId, TodaySummary::getImageData));
+                    .collect(Collectors.toMap(
+                            TodaySummary::getDiaryId,
+                            summary -> Base64.getEncoder().encodeToString(summary.getImageData()))); // ✅ Base64 변환
 
             List<DiaryOfMonth> diaryOfMonthList = diaries.stream()
                     .map(diary -> new DiaryOfMonth(
                             diary.getCreatedAt(),
                             diary.getContext(),
-                            summaryImageMap.getOrDefault(diary.getId(), null)
+                            summaryImageMap.getOrDefault(diary.getId(), null) // Base64 문자열 전달
                     ))
                     .toList();
 
@@ -110,18 +113,14 @@ public class DiaryServiceImpl implements DiaryService {
             Optional<TodaySummary> summaryImage = todaySummaryRepository.findByDiaryId(diaryByDate.getId());
 
             return ResponseHandler.create200Response(new ResponseForm(),
-                    CheckDiaryResponse.builder()
-                            .date(diaryByDate.getCreatedAt())
-                            .diaryDescription(diaryByDate.getContext())
-                            .summaryImage(summaryImage.map(TodaySummary::getImageData).orElse(null))
-                            .build());
-
+                    CheckDiaryResponse.from(diaryByDate, summaryImage.map(TodaySummary::getImageData).orElse(null)));
         } catch (RuntimeException e) {
             return ResponseHandler.create404Error(new ResponseForm(), new IllegalArgumentException("해당 날짜에 작성된 일기가 없습니다."));
         } catch (Exception e) {
             return ResponseHandler.create500Error(new ResponseForm(), e);
         }
     }
+
 
     private Diary saveDiary(CreateDiaryRequest createDiaryRequest, LocalDateTime localDateTime) {
         UserEntity user = userContextUtil.getUserEntity();
