@@ -10,6 +10,12 @@ import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse;
 import com.bamboo.log.diary.dto.response.GetDiariesOfMonthResponse.DiaryOfMonth;
 import com.bamboo.log.diary.repository.DiaryRepository;
 import com.bamboo.log.diary.repository.TodaySummaryRepository;
+
+import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
+import com.bamboo.log.domain.user.oauth.repository.UserRepository;
+import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
+import org.springframework.security.core.GrantedAuthority;
+
 import com.bamboo.log.diary.service.summary.TodaySummaryService;
 import com.bamboo.log.domain.user.jwt.service.UserContextUtil;
 import com.bamboo.log.domain.user.oauth.entity.UserEntity;
@@ -30,7 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import java.util.List;
+import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -112,7 +119,6 @@ public class DiaryServiceImpl implements DiaryService {
 
             return ResponseHandler.create200Response(new ResponseForm(),
                     CheckDiaryResponse.from(diaryByDate, summaryImage.map(TodaySummary::getImageData).orElse(null)));
-
         } catch (RuntimeException e) {
             return ResponseHandler.create404Error(new ResponseForm(), new IllegalArgumentException("해당 날짜에 작성된 일기가 없습니다."));
         } catch (Exception e) {
