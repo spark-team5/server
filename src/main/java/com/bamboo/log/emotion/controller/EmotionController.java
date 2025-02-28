@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/emotion")
 @RequiredArgsConstructor
@@ -34,9 +36,10 @@ public class EmotionController {
             MultipartFile image,
 
             @RequestPart("faceBox")
-            @Parameter(description = "얼굴 영역 좌표 (JSON 형식)", required = true, example = "{\"x1\": 12.34, \"y1\": 56.78, \"x2\": 123.456, \"y2\": 789.87}")
-            BoundingBox faceBox) {
+            @Parameter(description = "얼굴 영역 좌표 (JSON 형식)", required = true)
+            List<BoundingBox> faceBoxList) {
 
+        BoundingBox faceBox = faceBoxList.get(0); // 첫 번째 얼굴만 사용
         EmotionAnalysisRequest request = new EmotionAnalysisRequest(image, faceBox);
         EmotionAnalysisResponse response = emotionAnalysisService.analyzeEmotion(request);
 
