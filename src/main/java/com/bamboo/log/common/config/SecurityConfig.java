@@ -69,8 +69,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource getCorsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-       // configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 허용 프론트엔드 url 추가 필요
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://qbdffmpbayqfbgja.tunnel-pt.elice.io")); // 허용 프론트엔드 url 추가 필요
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         //configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
