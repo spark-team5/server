@@ -61,8 +61,8 @@ public class SecurityConfig {
         http.sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
-        http.cors(Customizer.withDefaults());
-
+        //http.cors(Customizer.withDefaults());
+        http.cors(cors -> cors.configurationSource(getCorsConfiguration()));
         return http.build();
     }
 
@@ -77,7 +77,8 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         //configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        // configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
 
        // configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setMaxAge(3600L);
