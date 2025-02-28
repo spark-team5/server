@@ -24,11 +24,7 @@ public class DiaryController {
     @Operation(summary = "일기 생성")
     @PostMapping("/create")
     public ResponseEntity createDiary(@RequestBody CreateDiaryRequest createDiaryRequest) {
-        try {
-            return diaryService.createDiary(createDiaryRequest);
-        } catch (Exception e) {
-            return ResponseHandler.create500Error(new ResponseForm(), e);
-        }
+        return diaryService.createDiary(createDiaryRequest);
     }
 
     @Operation(summary = "월별 일기 조회")
@@ -42,4 +38,5 @@ public class DiaryController {
     public ResponseEntity getDiaryByDate(@RequestParam LocalDateTime date) {
         return diaryService.getDiaryByDate(date);
     }
+
 }

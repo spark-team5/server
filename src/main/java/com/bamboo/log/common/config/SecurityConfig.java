@@ -8,6 +8,7 @@ import com.bamboo.log.domain.user.oauth.service.CustomFailureHandler;
 import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
 import com.bamboo.log.domain.user.oauth.service.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -50,10 +52,8 @@ public class SecurityConfig {
         //이쪽에다가 각각의 엔드포인트를 넣어야함
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/refresh").permitAll()
-                .requestMatchers("/logout").hasAnyRole("USER")
                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
-                .requestMatchers("/api/images/**").hasAnyRole("USER")
-                .anyRequest().authenticated());
+                .anyRequest().permitAll());
 
 
         http.sessionManagement((session) -> session
@@ -63,8 +63,7 @@ public class SecurityConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration configuration = new CorsConfiguration();
-                //프론트 url 넣기
-                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                configuration.addAllowedOriginPattern("*");
                 configuration.setAllowedMethods(Collections.singletonList("*"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -74,6 +73,7 @@ public class SecurityConfig {
                 return configuration;
             }
         }));
+
         return http.build();
     }
 }
