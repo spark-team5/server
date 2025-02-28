@@ -70,14 +70,16 @@ public class SecurityConfig {
     public CorsConfigurationSource getCorsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
+        configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",
                 "https://qbdffmpbayqfbgja.tunnel-pt.elice.io")); // 허용 프론트엔드 url 추가 필요
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         //configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+
+       // configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setMaxAge(3600L);
 
         configuration.setExposedHeaders(List.of("Set-Cookie", "Authorization")); // 한 번에 설정
