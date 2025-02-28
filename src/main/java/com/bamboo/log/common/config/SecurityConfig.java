@@ -8,6 +8,7 @@ import com.bamboo.log.domain.user.oauth.service.CustomFailureHandler;
 import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
 import com.bamboo.log.domain.user.oauth.service.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,7 +64,7 @@ public class SecurityConfig {
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration configuration = new CorsConfiguration();
                 //프론트 url 넣기
-                configuration.setAllowedOrigins(Collections.singletonList("*"));
+                configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
                 configuration.setAllowedMethods(Collections.singletonList("*"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -73,6 +74,12 @@ public class SecurityConfig {
                 return configuration;
             }
         }));
+        http.exceptionHandling((exceptionHandling) ->
+                exceptionHandling.authenticationEntryPoint((request, response, authException) ->
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED) // 401 반환
+                )
+        );
+
         return http.build();
     }
 }
