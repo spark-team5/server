@@ -1,11 +1,8 @@
-server:
-  port: ${SERVER_PORT}
-
 spring:
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/OAuth2?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: root
+    password: heodongun0922
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
@@ -19,28 +16,32 @@ spring:
       client:
         registration:
           kakao:
-            client-authentication-method: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_AUTHENTICATION_METHOD}
-            client-name: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME}
-            client-id: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
-            client-secret: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
-            redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
-            authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
-            scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
+            client-authentication-method: client_secret_post
+            client-name: kakao
+            client-id: 649c1e34aedc1a7db892333d900725f2
+            client-secret: FqJEAF5XKaO0n4Bv3KVXWCpUcHQWahY8
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - account_email
         provider:
           kakao:
-            authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
-            token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
-            user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
-            user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
   jwt:
-    secret: ${JWT_SECRET}
+    secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+
 elice:
   api:
-    token: ${API_TOKEN}
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDA1NDYyMjgsIm5iZiI6MTc0MDU0NjIyOCwiZXhwIjoxNzUwNDYzOTk5LCJrZXlfaWQiOiJjYzI2YjZjMi0zNWExLTQ0NmEtODhkYS02ZjdkZGExNDMzYWMifQ.tqRvmEibKaRZUJK9m7pp7ZOWsdzy2rGg8YxjQ1MrSDk
     url:
-      face: ${FACE_URL}
-      img: ${IMG_URL}
-      chat: ${CHAT_URL}
+      face: https://api-cloud-function.elice.io/d5ff1aef-c59f-433c-8e1c-f9b52ac4ab6a/predict
+      img: https://api-cloud-function.elice.io/0133c2f7-9f3f-44b6-a3d6-c24ba8ef4510/generate
+      chat: null
+
 emotion:
   api:
-    url: ${EMOTION_URL}
+    url: null

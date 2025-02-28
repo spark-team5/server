@@ -38,35 +38,23 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String refreshToken = jwtUtil.createJwt(userId, "refresh", name, username, role, 1800000L);
-        String accessToken = jwtUtil.createJwt(userId, "access", name, username, role, 1209600000L);
+        String refreshToken = jwtUtil.createJwt(userId, "refresh", name, username, role, 1209600000L);
         addRefreshEntity(name, username, refreshToken, 1209600000L);
 
-        // SameSite 속성을 추가한 쿠키 설정
-        response.addHeader("Set-Cookie", createCookie("refresh", refreshToken));
-        response.addHeader("Set-Cookie", UnScretCreateCookie("access", accessToken));
+        response.addCookie(createCookie("Authorization", refreshToken));
         response.sendRedirect("http://localhost:3000/welcome");
     }
 
-    private String createCookie(String key, String value) {
-        ResponseCookie cookie = ResponseCookie.from(key, value)
-                .maxAge(24 * 60 * 60 * 14)  // 14일
-                .path("/")
-                .httpOnly(true)
-                .secure(true)  // HTTPS에서만 전송하도록 설정
-                .sameSite("None")  // SameSite=None 설정
-                .build();
-        return cookie.toString();
-    }
 
-    private String UnScretCreateCookie(String key, String value) {
-        ResponseCookie cookie = ResponseCookie.from(key, value)
-                .maxAge(60 * 60*12)  // 12시간
-                .path("/")
-                .secure(true)  // HTTPS에서만 전송하도록 설정
-                .sameSite("None")  // SameSite=None 설정
-                .build();
-        return cookie.toString();
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60*60*60);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 
     private void addRefreshEntity(String name, String username, String refresh, Long expiredMs) {

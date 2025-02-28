@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -51,9 +52,8 @@ public class SecurityConfig {
         //이쪽에다가 각각의 엔드포인트를 넣어야함
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/refresh").permitAll()
-                .requestMatchers("/logout").hasAnyRole("USER")
                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
-                .anyRequest().hasAnyRole("USER"));
+                .anyRequest().authenticated());
 
 
         http.sessionManagement((session) -> session
@@ -63,8 +63,7 @@ public class SecurityConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration configuration = new CorsConfiguration();
-                //프론트 url 넣기
-                configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
+                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
                 configuration.setAllowedMethods(Collections.singletonList("*"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -74,11 +73,6 @@ public class SecurityConfig {
                 return configuration;
             }
         }));
-        http.exceptionHandling((exceptionHandling) ->
-                exceptionHandling.authenticationEntryPoint((request, response, authException) ->
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED) // 401 반환
-                )
-        );
 
         return http.build();
     }
