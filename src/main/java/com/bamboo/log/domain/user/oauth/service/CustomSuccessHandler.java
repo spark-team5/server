@@ -5,7 +5,6 @@ import com.bamboo.log.domain.user.oauth.dto.CustomOAuth2User;
 import com.bamboo.log.domain.user.oauth.entity.RefreshToken;
 import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,21 +40,24 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = jwtUtil.createJwt(userId, "refresh", name, username, role, 1209600000L);
         addRefreshEntity(name, username, refreshToken, 1209600000L);
 
-        response.addCookie(createCookie("Authorization", refreshToken));
+        // Create and set the cookie
+        createCookie(response, "Authorization", refreshToken);
+
         response.sendRedirect("http://localhost:3000/welcome");
     }
 
+    private void createCookie(HttpServletResponse response, String key, String value) {
+        // ResponseCookie 사용
+        ResponseCookie cookie = ResponseCookie.from(key, value)
+                .maxAge(1209600000 / 1000)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None") // SameSite=None 설정
+                .build();
 
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(1209600000 / 1000);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setComment("SameSite=None; Secure");
-        return cookie;
+        // Response에 쿠키 추가
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     private void addRefreshEntity(String name, String username, String refresh, Long expiredMs) {
