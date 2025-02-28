@@ -28,16 +28,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
 
         System.out.println("requestUri = " + requestUri);
-        if (requestUri.matches("^\\/login(?:\\/.*)?$")) {
 
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
-
-            filterChain.doFilter(request, response);
-            return;
-        }
         String authorization = null;
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
