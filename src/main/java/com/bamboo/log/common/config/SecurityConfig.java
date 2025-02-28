@@ -7,10 +7,10 @@ import com.bamboo.log.domain.user.oauth.repository.RefreshRepository;
 import com.bamboo.log.domain.user.oauth.service.CustomFailureHandler;
 import com.bamboo.log.domain.user.oauth.service.CustomOAuth2UserService;
 import com.bamboo.log.domain.user.oauth.service.CustomSuccessHandler;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,8 +19,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -51,28 +53,36 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/refresh").permitAll()
                 .requestMatchers("/logout").hasAnyRole("USER")
-                .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
-                .anyRequest().hasAnyRole("USER"));
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                .anyRequest().authenticated());
+        // .anyRequest().hasAnyRole("USER"));
 
 
         http.sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
-        http.cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                CorsConfiguration configuration = new CorsConfiguration();
-                //프론트 url 넣기
-                configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
-                configuration.setAllowedMethods(Collections.singletonList("*"));
-                configuration.setAllowCredentials(true);
-                configuration.setAllowedHeaders(Collections.singletonList("*"));
-                configuration.setMaxAge(3600L);
-                configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-                return configuration;
-            }
-        }));
+        http.cors(Customizer.withDefaults());
+
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource getCorsConfiguration() {
+        CorsConfiguration configuration = new CorsConfiguration();
+       // configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 허용 프론트엔드 url 추가 필요
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        //configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setMaxAge(3600L);
+
+        configuration.setExposedHeaders(List.of("Set-Cookie", "Authorization")); // 한 번에 설정
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+        //return configuration;
     }
 }
