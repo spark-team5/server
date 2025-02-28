@@ -1,7 +1,6 @@
 package com.bamboo.log.diary.dto.response;
 
 import lombok.Builder;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,12 +10,10 @@ public record GetDiariesOfMonthResponse(
         String date,
         List<DiaryOfMonth> diaries
 ) {
-
     @Builder
     public record DiaryOfMonth(
             LocalDateTime createdAt,
             String context,
-            byte[] summaryImage
+            String summaryImage
     ) {}
-
 }
