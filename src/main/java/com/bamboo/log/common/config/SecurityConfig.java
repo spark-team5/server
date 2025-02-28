@@ -53,7 +53,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/refresh").permitAll()
                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-resources/**","/webjars/**").permitAll()
-                .anyRequest().authenticated());
+                .anyRequest().permitAll());
 
 
         http.sessionManagement((session) -> session
