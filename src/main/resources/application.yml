@@ -1,9 +1,13 @@
+sever:
+  port: ${SERVER_PORT}
+
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_NAME}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     show-sql: true
     open-in-view: false
@@ -11,3 +15,32 @@ spring:
      ddl-auto: update
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-authentication-method: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_AUTHENTICATION_METHOD}
+            client-name: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME}
+            client-id: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
+            client-secret: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
+            redirect-uri: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI}
+            authorization-grant-type: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE}
+            scope: ${SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE}
+        provider:
+          kakao:
+            authorization-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_AUTHORIZATION_URI}
+            token-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_TOKEN_URI}
+            user-info-uri: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_INFO_URI}
+            user-name-attribute: ${SECURITY_OAUTH2_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE}
+  jwt:
+    secret: ${JWT_SECRET}
+elice:
+  api:
+    token: ${API_TOKEN}
+    url:
+      face: ${FACE_URL}
+      img: ${IMG_URL}
+emotion:
+  api:
+    url: ${EMOTION_URL}
